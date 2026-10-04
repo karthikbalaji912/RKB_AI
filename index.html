@@ -1,0 +1,3269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RKB — Real-Time Knowledge Buddy AI</title>
+<meta name="description" content="RKB — Real-Time Knowledge Buddy AI. Your AI. Everywhere. Anytime.">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<meta name="theme-color" content="#050914">
+<style>
+/* ==========================================================================
+   RKB v4 — PHASE 1 + 2 + 3 + 4
+   NO UI BLUR. Transparency + borders + shadows + gradients only.
+   Character SVG glow is allowed. Panel backdrop-filter is forbidden.
+   ========================================================================== */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+/* --- FINAL BLUR SAFETY LAYER --- */
+html,body,#app,.app-shell,.stage,.sidebar,.inspector,.topbar,.character-stage,
+.card,.panel,.qbtn,.chip-btn,.icon-btn,.modal,.boot,.debug-hud,.rkb-rig,.rkb-rig svg,
+.rkb-speech,.context-panel,.mode-bar,.quickbar,.chat-row{
+  filter:none !important;
+  backdrop-filter:none !important;
+  -webkit-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+body{
+  margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif;
+  color:var(--text);background:var(--bg-0);overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+:root{
+  --accent:#45e9ff;--accent-2:#b36cff;
+  --bg-0:#050914;--bg-1:#0a1422;
+  --panel:rgba(10,22,38,.72);--panel-2:rgba(14,28,48,.82);--panel-solid:#0a1626;
+  --border:rgba(69,233,255,.22);--border-strong:rgba(69,233,255,.55);
+  --text:#eafcff;--text-dim:#8fa9bb;--text-mute:#5c7488;
+  --danger:#ff5a7a;--ok:#63ffbd;--warn:#ffd15c;--info:#7a8cff;
+  --radius:14px;--blur:0px;--glass:.72;--glow:.55;--gap:14px;
+}
+body[data-theme="cyber-cyan"]{--accent:#45e9ff;--accent-2:#b36cff;--bg-0:#050914;--bg-1:#0a1422}
+body[data-theme="neon-purple"]{--accent:#b36cff;--accent-2:#ff6bd8;--bg-0:#0b0616;--bg-1:#150a26}
+body[data-theme="matrix-green"]{--accent:#63ffbd;--accent-2:#45e9ff;--bg-0:#030c08;--bg-1:#061a10}
+body[data-theme="red-core"]{--accent:#ff4d69;--accent-2:#ffd15c;--bg-0:#0d0407;--bg-1:#1a0810}
+body[data-theme="midnight"]{--accent:#7a8cff;--accent-2:#45e9ff;--bg-0:#05070f;--bg-1:#0a0e1e}
+body[data-theme="glass"]{--accent:#a9ecff;--accent-2:#cdb6ff;--bg-0:#0a1220;--bg-1:#0f1a2e;--glass:.35}
+body[data-theme="hologram"]{--accent:#57f7ff;--accent-2:#a78bfa;--bg-0:#020a14;--bg-1:#061625}
+body[data-theme="minimal"]{--accent:#d8e6ee;--accent-2:#9fb4c2;--bg-0:#0b0e12;--bg-1:#121820}
+body[data-theme="amoled"]{--accent:#45e9ff;--accent-2:#b36cff;--bg-0:#000;--bg-1:#000}
+body[data-theme="rgb"]{--accent:#45e9ff;--accent-2:#ff4d69;--bg-0:#050914;--bg-1:#0a1422}
+
+/* Desktop transparent mode */
+body[data-desktop="1"]{background:transparent !important}
+body[data-desktop="1"] .rkb-bg{display:none}
+body[data-desktop="companion"] .app-shell{grid-template-columns:1fr;padding:6px}
+body[data-desktop="companion"] .sidebar,
+body[data-desktop="companion"] .inspector,
+body[data-desktop="companion"] .topbar .brand-text,
+body[data-desktop="companion"] .topbar-actions,
+body[data-desktop="companion"] .stage-head,
+body[data-desktop="companion"] .mode-bar,
+body[data-desktop="companion"] .quickbar{display:none !important}
+body[data-desktop="companion"] .character-stage{background:transparent;border:0}
+body[data-desktop="companion"] .stage-hud{display:none}
+body[data-desktop="companion"] .topbar{background:transparent;border:0;justify-content:center;padding:2px}
+
+button,input,select,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(69,233,255,.2);border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:rgba(69,233,255,.4)}
+
+/* ================== BACKGROUND CANVAS ================== */
+.rkb-bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+
+/* ================== BOOT ================== */
+.boot{position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at 50% 45%,#0a1a30 0%,#03060d 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;transition:opacity .6s ease,visibility .6s}
+.boot.hide{opacity:0;visibility:hidden;pointer-events:none;display:none}
+.boot-logo{width:140px;height:140px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,rgba(69,233,255,.18),transparent 70%);box-shadow:0 0 60px var(--accent),0 0 120px rgba(69,233,255,.35);padding:8px;animation:bootPulse 3s ease-in-out infinite}
+.boot-logo img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 0 12px rgba(69,233,255,.7))}
+.boot-logo .fallback{display:none;font-size:56px;font-weight:900;color:var(--accent);text-shadow:0 0 24px var(--accent)}
+@keyframes bootPulse{50%{transform:scale(1.05)}}
+.boot-title{font-size:26px;letter-spacing:.4em;text-transform:uppercase;font-weight:700;text-shadow:0 0 18px var(--accent)}
+.boot-sub{color:var(--text-dim);letter-spacing:.28em;font-size:11px;text-transform:uppercase}
+.boot-log{width:min(460px,86vw);font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--accent);min-height:190px;line-height:1.75}
+.boot-log .ln{opacity:0;transform:translateY(4px);animation:bootLine .35s ease forwards}
+.boot-log .ln.ok::after{content:" ✓";color:var(--ok);margin-left:6px}
+@keyframes bootLine{to{opacity:1;transform:none}}
+.boot-bar{width:min(460px,86vw);height:3px;background:rgba(69,233,255,.12);border-radius:3px;overflow:hidden}
+.boot-bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 12px var(--accent);transition:width .3s ease}
+
+/* ================== TOPBAR ================== */
+.topbar{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:linear-gradient(180deg,rgba(5,9,20,.92),rgba(5,9,20,.5));border-bottom:1px solid var(--border);-webkit-app-region:drag}
+.topbar button,.topbar a,.topbar input{-webkit-app-region:no-drag}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 0 22px rgba(69,233,255,.5)}
+.logo-img{width:100%;height:100%;object-fit:contain;display:block;padding:3px}
+.logo-fallback{display:none;font-weight:900;font-size:20px;color:#041018}
+.logo.no-img .logo-img{display:none}
+.logo.no-img .logo-fallback{display:grid;place-items:center;width:100%;height:100%}
+.brand-text h1{margin:0;font-size:16px;letter-spacing:.18em;font-weight:800}
+.brand-text small{font-size:10px;letter-spacing:.14em;color:var(--text-dim);text-transform:uppercase}
+.status-pill{display:inline-flex;align-items:center;gap:6px;margin-left:10px;padding:4px 10px;border-radius:999px;background:rgba(99,255,189,.08);border:1px solid rgba(99,255,189,.35);color:var(--ok);font-size:10px;letter-spacing:.18em;text-transform:uppercase}
+.status-pill i{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35;transform:scale(.75)}}
+.topbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+.icon-btn{position:relative;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);font-size:12px;transition:.18s}
+.icon-btn:hover{border-color:var(--border-strong);box-shadow:0 0 16px rgba(69,233,255,.25);transform:translateY(-1px)}
+.icon-btn .lbl{display:none}
+@media(min-width:960px){.icon-btn .lbl{display:inline}}
+.icon-btn.small{padding:6px 8px;font-size:14px}
+.icon-btn.on{border-color:var(--border-strong);box-shadow:0 0 16px rgba(69,233,255,.35);color:var(--accent)}
+.mobile-only{display:none}
+@media(max-width:820px){.mobile-only{display:inline-flex}}
+
+/* ================== SHELL ================== */
+.app-shell{position:relative;z-index:2;display:grid;grid-template-columns:250px 1fr 350px;gap:var(--gap);padding:var(--gap);height:calc(100vh - 62px)}
+@media(max-width:1200px){.app-shell{grid-template-columns:220px 1fr 320px}}
+@media(max-width:900px){.app-shell{grid-template-columns:1fr;padding-bottom:80px}}
+@media(max-width:900px){.sidebar{position:fixed;top:62px;left:0;bottom:0;width:265px;z-index:20;transform:translateX(-110%);transition:transform .28s ease}}
+.sidebar.open{transform:none}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:15}
+
+/* ================== SIDEBAR ================== */
+.sidebar{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px 10px;overflow-y:auto;display:flex;flex-direction:column}
+.nav-group{margin-bottom:14px}
+.nav-group-title{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-mute);padding:4px 10px;margin-bottom:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;color:var(--text-dim);font-size:13px;cursor:pointer;transition:.16s;border:1px solid transparent}
+.nav-item:hover{background:rgba(69,233,255,.06);color:var(--text)}
+.nav-item.active{background:linear-gradient(90deg,rgba(69,233,255,.14),transparent);color:var(--text);border-color:var(--border);box-shadow:inset 0 0 20px rgba(69,233,255,.1)}
+.nav-item .ico{font-size:15px;filter:drop-shadow(0 0 6px var(--accent))}
+.nav-item .badge{margin-left:auto;font-size:9px;padding:2px 6px;border-radius:6px;background:rgba(255,90,122,.15);color:var(--danger);letter-spacing:.1em}
+.sidebar-foot{margin-top:auto;padding:10px}
+.dna-mini{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-mute)}
+.dna-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.lvl-mini{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:rgba(5,12,24,.45)}
+.lvl-mini .row1{display:flex;justify-content:space-between;font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.14em}
+.lvl-mini .row1 b{color:var(--accent)}
+.lvl-mini .bar{height:5px;background:rgba(69,233,255,.12);border-radius:3px;overflow:hidden}
+.lvl-mini .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .4s ease}
+
+/* ================== STAGE ================== */
+.stage{position:relative;display:flex;flex-direction:column;gap:12px;min-width:0}
+.stage-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.stage-title h2{margin:0;font-size:22px;letter-spacing:.06em}
+.stage-title p{margin:2px 0 0;font-size:12px;color:var(--text-dim);letter-spacing:.16em}
+.stage-tools{display:flex;gap:6px;flex-wrap:wrap}
+.chip-btn{padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:var(--panel);font-size:12px;color:var(--text);transition:.18s}
+.chip-btn:hover{border-color:var(--border-strong);box-shadow:0 0 14px rgba(69,233,255,.22)}
+.chip-btn.on{background:linear-gradient(135deg,rgba(69,233,255,.2),rgba(179,108,255,.14));border-color:var(--border-strong)}
+
+.character-stage{position:relative;flex:1;min-height:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:radial-gradient(120% 80% at 50% 20%,rgba(69,233,255,.08),transparent 60%),linear-gradient(180deg,var(--bg-1),rgba(0,0,0,.4));display:grid;place-items:center}
+.character-stage::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(69,233,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(69,233,255,.05) 1px,transparent 1px);background-size:36px 36px;pointer-events:none;mask:radial-gradient(circle at 50% 50%,#000 40%,transparent 80%)}
+.stage-platform{position:absolute;bottom:6%;left:50%;transform:translateX(-50%);width:min(560px,90%);height:100px;pointer-events:none;opacity:.9}
+.stage-platform svg{width:100%;height:100%;display:block}
+.rkb-rig{position:relative;width:min(430px,82vw);aspect-ratio:400/560;max-height:100%;transform-origin:50% 80%;animation:rigFloat 5s ease-in-out infinite;z-index:1}
+@keyframes rigFloat{50%{transform:translateY(-10px)}}
+.rkb-rig svg{width:100%;height:100%;display:block}
+.rkb-speech{position:absolute;top:6%;left:50%;transform:translateX(-50%);padding:9px 15px;background:var(--panel-2);border:1px solid var(--border-strong);border-radius:14px;font-size:12px;color:var(--text);max-width:82%;text-align:center;box-shadow:0 0 20px rgba(69,233,255,.25);opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
+.rkb-speech.on{opacity:1;transform:translate(-50%,-6px)}
+.stage-hud{position:absolute;top:12px;right:12px;display:grid;gap:6px;pointer-events:none}
+.hud-item{display:flex;justify-content:space-between;gap:12px;padding:6px 10px;background:rgba(5,12,24,.72);border:1px solid var(--border);border-radius:8px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;min-width:160px}
+.hud-k{color:var(--text-mute)}
+.hud-v{color:var(--accent)}
+
+/* ================== QUICKBAR ================== */
+.quickbar{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+@media(max-width:600px){.quickbar{grid-template-columns:repeat(3,1fr)}}
+.qbtn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--text-dim);font-size:10px;letter-spacing:.1em;transition:.18s}
+.qbtn:hover{color:var(--text);border-color:var(--border-strong);box-shadow:0 0 16px rgba(69,233,255,.2);transform:translateY(-2px)}
+.qbtn span{font-size:10px;text-transform:uppercase}
+
+/* ================== INSPECTOR ================== */
+.inspector{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;min-height:0}
+@media(max-width:900px){.inspector{position:fixed;top:62px;right:0;bottom:0;width:min(350px,90vw);z-index:20;transform:translateX(110%);transition:transform .28s ease;border-radius:14px 0 0 14px}}
+.inspector.open{transform:none}
+.inspector-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+.inspector-head h3{margin:0;font-size:14px;letter-spacing:.08em}
+.inspector-body{overflow-y:auto;padding:14px;display:grid;gap:14px}
+
+/* ================== CONTROLS ================== */
+.field{display:grid;gap:6px}
+.field label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-mute)}
+.field .row{display:flex;align-items:center;gap:10px}
+.field input[type="range"]{appearance:none;-webkit-appearance:none;width:100%;height:4px;background:rgba(69,233,255,.15);border-radius:4px;outline:none}
+.field input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);cursor:pointer}
+.field input[type="range"]::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);cursor:pointer}
+.field select,.field input[type="text"],.field input[type="number"],.field input[type="password"],.field textarea{padding:8px 10px;background:rgba(5,12,24,.7);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);outline:none;transition:.16s;width:100%}
+.field select:focus,.field input:focus,.field textarea:focus{border-color:var(--border-strong);box-shadow:0 0 12px rgba(69,233,255,.2)}
+.field input[type="color"]{width:100%;height:36px;border:1px solid var(--border);border-radius:8px;background:transparent;padding:2px;cursor:pointer}
+.field .val{font-size:11px;color:var(--accent);font-variant-numeric:tabular-nums;min-width:36px;text-align:right}
+
+.chip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:6px}
+.chip{padding:8px 6px;border:1px solid var(--border);border-radius:10px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);background:rgba(5,12,24,.5);transition:.16s;text-align:center;cursor:pointer;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip:hover{border-color:var(--border-strong);color:var(--text)}
+.chip.on{background:linear-gradient(135deg,rgba(69,233,255,.2),rgba(179,108,255,.14));color:var(--text);border-color:var(--border-strong);box-shadow:0 0 14px rgba(69,233,255,.28)}
+.chip.emo{padding:10px 4px;font-size:18px}
+.chip.beta{position:relative}
+.chip.beta::after{content:"BETA";position:absolute;top:2px;right:2px;font-size:7px;color:var(--warn);letter-spacing:.08em}
+
+.btn-row{display:flex;gap:6px;flex-wrap:wrap}
+.btn{padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:12px;letter-spacing:.06em;transition:.18s}
+.btn:hover{border-color:var(--border-strong);box-shadow:0 0 14px rgba(69,233,255,.22);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#041018;border:0;font-weight:700}
+.btn.danger{border-color:rgba(255,90,122,.4);color:var(--danger)}
+.btn.danger:hover{background:rgba(255,90,122,.1);border-color:var(--danger)}
+.btn.small{padding:6px 10px;font-size:11px}
+
+.divider{height:1px;background:var(--border);margin:2px 0}
+.section-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-mute);margin-top:4px}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:9px;letter-spacing:.14em;text-transform:uppercase;background:rgba(255,209,92,.14);color:var(--warn);border:1px solid rgba(255,209,92,.4)}
+.hint{font-size:11px;color:var(--text-mute);line-height:1.5}
+.kv{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);padding:4px 0;border-bottom:1px dashed rgba(69,233,255,.12)}
+.kv b{color:var(--text)}
+
+/* ============== LIFE / ACHIEVEMENTS / XP ============== */
+.life-card{display:grid;gap:10px;padding:12px;border:1px solid var(--border);border-radius:12px;background:rgba(5,12,24,.55)}
+.life-emo{display:flex;align-items:center;gap:10px}
+.life-emo .e-icon{font-size:26px;filter:drop-shadow(0 0 12px var(--accent))}
+.life-emo .e-txt b{display:block;font-size:14px;letter-spacing:.08em;color:var(--text)}
+.life-emo .e-txt small{font-size:10px;color:var(--text-mute);letter-spacing:.14em;text-transform:uppercase}
+.life-bar{height:8px;background:rgba(69,233,255,.1);border-radius:6px;overflow:hidden}
+.life-bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 12px var(--accent);transition:width .4s ease}
+.life-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;font-size:11px;color:var(--text-dim)}
+.life-kv b{color:var(--text);font-weight:600}
+.ach-grid{display:grid;gap:8px}
+.ach{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:rgba(5,12,24,.45);opacity:.6;transition:.18s}
+.ach.on{opacity:1;border-color:rgba(99,255,189,.55);box-shadow:0 0 16px rgba(99,255,189,.18)}
+.ach .ico{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:rgba(69,233,255,.12);font-size:18px}
+.ach .t b{display:block;font-size:12px;color:var(--text)}
+.ach .t small{font-size:10px;color:var(--text-mute)}
+.ach .st{font-size:9px;letter-spacing:.16em;color:var(--text-mute);text-transform:uppercase}
+.ach.on .st{color:var(--ok)}
+.lvl-card{padding:14px;border:1px solid var(--border);border-radius:14px;background:radial-gradient(circle at 20% 0%,rgba(69,233,255,.1),transparent 60%),rgba(5,12,24,.55);display:grid;gap:10px}
+.lvl-card .top{display:flex;justify-content:space-between;align-items:center}
+.lvl-card .top h4{margin:0;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-mute)}
+.lvl-card .rank{font-size:14px;font-weight:800;letter-spacing:.08em;color:var(--accent)}
+.lvl-card .xp-bar{height:10px;background:rgba(69,233,255,.12);border-radius:6px;overflow:hidden}
+.lvl-card .xp-bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 0 14px var(--accent);transition:width .5s ease}
+.lvl-card .meta{display:flex;justify-content:space-between;font-size:10px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.14em}
+.lvl-card .meta b{color:var(--accent)}
+
+/* ================== TOASTS / MODAL ================== */
+.toast-stack{position:fixed;top:74px;right:20px;z-index:300;display:grid;gap:8px;pointer-events:none;max-width:340px}
+.toast{pointer-events:auto;padding:10px 14px;background:var(--panel-2);border:1px solid var(--border-strong);border-radius:10px;font-size:12px;color:var(--text);box-shadow:0 0 22px rgba(69,233,255,.25);animation:toastIn .25s ease}
+.toast.err{border-color:rgba(255,90,122,.6);box-shadow:0 0 22px rgba(255,90,122,.28)}
+.toast.ok{border-color:rgba(99,255,189,.6);box-shadow:0 0 22px rgba(99,255,189,.28)}
+.toast.ach{background:linear-gradient(135deg,rgba(99,255,189,.16),rgba(69,233,255,.16));border-color:rgba(99,255,189,.7)}
+@keyframes toastIn{from{opacity:0;transform:translateY(-8px)}}
+.modal-root{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.78);display:grid;place-items:center;padding:20px}
+.modal-root[hidden]{display:none !important;}
+.modal{width:min(720px,95vw);max-height:88vh;overflow:auto;background:var(--panel-solid);border:1px solid var(--border-strong);border-radius:16px;padding:20px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.modal h3{margin:0 0 12px;font-size:16px;letter-spacing:.08em}
+.modal pre{margin:0;padding:12px;background:#020610;border:1px solid var(--border);border-radius:10px;font-size:11px;line-height:1.55;color:var(--accent);max-height:320px;overflow:auto;white-space:pre-wrap;word-break:break-word}
+.modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
+
+/* ================== DEBUG HUD ================== */
+.debug-hud{position:fixed;bottom:12px;left:12px;z-index:200;font-family:ui-monospace,Menlo,monospace;font-size:10px;line-height:1.65;padding:10px 12px;background:rgba(5,12,24,.92);border:1px solid var(--border);border-radius:10px;color:var(--text-dim);max-width:280px;pointer-events:none}
+.debug-hud b{color:var(--accent)}
+
+/* ================== CONTEXT STATUS PANEL ================== */
+.context-panel{position:absolute;top:12px;left:12px;z-index:5;min-width:230px;padding:10px 12px;background:rgba(5,12,24,.85);border:1px solid var(--border);border-radius:12px;font-size:11px;display:none;flex-direction:column;gap:6px;max-width:280px;box-shadow:0 0 22px rgba(69,233,255,.15)}
+.context-panel.on{display:flex}
+.context-panel h4{margin:0 0 2px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--text-mute);display:flex;justify-content:space-between;align-items:center}
+.context-panel h4 .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);animation:pulse 1.4s infinite}
+.context-panel .row{display:flex;justify-content:space-between;gap:10px;font-size:10px;text-transform:uppercase;letter-spacing:.14em}
+.context-panel .row .k{color:var(--text-mute)}
+.context-panel .row .v{color:var(--accent);max-width:150px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.context-panel .actions{display:flex;gap:6px;margin-top:4px}
+.context-panel .actions button{flex:1;padding:5px 8px;border-radius:8px;border:1px solid var(--border);font-size:10px;letter-spacing:.1em;text-transform:uppercase;background:transparent;color:var(--text);transition:.16s}
+.context-panel .actions button:hover{border-color:var(--border-strong);color:var(--accent)}
+
+/* ================== MODE BAR ================== */
+.mode-bar{display:flex;gap:6px;overflow-x:auto;padding:2px 0}
+.mode-btn{padding:7px 12px;border-radius:999px;border:1px solid var(--border);background:var(--panel);color:var(--text-dim);font-size:11px;letter-spacing:.08em;white-space:nowrap;transition:.16s;display:inline-flex;align-items:center;gap:6px}
+.mode-btn:hover{color:var(--text);border-color:var(--border-strong)}
+.mode-btn.on{background:linear-gradient(135deg,rgba(69,233,255,.2),rgba(179,108,255,.14));color:var(--text);border-color:var(--border-strong);box-shadow:0 0 14px rgba(69,233,255,.3)}
+
+/* ================== TIMELINE / FILES / MEM ================== */
+.timeline{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;padding-right:4px}
+.tl-item{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:rgba(5,12,24,.5);display:grid;grid-template-columns:auto 1fr auto;gap:8px;font-size:11px;align-items:center}
+.tl-item .time{color:var(--text-mute);font-family:ui-monospace,monospace;font-size:10px}
+.tl-item .src{color:var(--text);font-weight:600}
+.tl-item .sum{color:var(--text-dim);font-size:10px;grid-column:2 / span 2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-item .type{padding:1px 6px;border-radius:6px;background:rgba(69,233,255,.14);color:var(--accent);font-size:9px;letter-spacing:.14em;text-transform:uppercase}
+.tl-empty{padding:12px;text-align:center;font-size:11px;color:var(--text-mute)}
+
+.file-drop{border:2px dashed var(--border);border-radius:12px;padding:18px 14px;text-align:center;font-size:12px;color:var(--text-dim);transition:.2s;background:rgba(5,12,24,.4);cursor:pointer}
+.file-drop.hot{border-color:var(--border-strong);background:rgba(69,233,255,.08);color:var(--text)}
+.file-drop .h{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-mute)}
+.file-drop .h b{color:var(--accent)}
+.file-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;margin-top:8px}
+.file-item{padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:rgba(5,12,24,.5);font-size:11px;display:grid;grid-template-columns:1fr auto;gap:6px}
+.file-item .nm{color:var(--text);font-weight:600}
+.file-item .meta{color:var(--text-mute);font-size:10px}
+
+.mem-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto}
+.mem-item{padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:rgba(5,12,24,.5);font-size:11px;display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
+.mem-item .cat{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);background:rgba(69,233,255,.12);padding:2px 6px;border-radius:6px}
+.mem-item .txt{color:var(--text);overflow:hidden;text-overflow:ellipsis}
+.mem-item .x{cursor:pointer;color:var(--text-mute);font-size:12px}
+.mem-item .x:hover{color:var(--danger)}
+
+.privacy-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:rgba(5,12,24,.5);font-size:11px;margin-bottom:6px}
+.privacy-row .k{color:var(--text-mute);letter-spacing:.14em;text-transform:uppercase;font-size:10px}
+.privacy-row .v{color:var(--text);font-weight:600}
+.privacy-row .v.on{color:var(--ok)}
+.privacy-row .v.off{color:var(--text-mute)}
+
+.pan-banner{padding:12px;border-radius:12px;border:1px solid rgba(255,209,92,.4);background:linear-gradient(135deg,rgba(255,209,92,.08),rgba(69,233,255,.05));display:flex;gap:12px;align-items:center}
+.pan-banner img{width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 0 8px rgba(255,209,92,.5))}
+.pan-banner .txt b{display:block;font-size:13px;color:var(--warn);letter-spacing:.14em;text-transform:uppercase}
+.pan-banner .txt small{font-size:10px;color:var(--text-dim)}
+
+/* ================== EXPRESSION / GESTURE / HAIR STATE ================== */
+.rkb-rig[data-expr="happy"] .rkb-head{animation:tiltUp .5s ease}
+.rkb-rig[data-expr="excited"] .rkb-head{animation:jump .5s ease infinite}
+.rkb-rig[data-expr="thinking"] .rkb-head{animation:tiltThink 1.6s ease-in-out infinite}
+.rkb-rig[data-expr="sleepy"] .rkb-head{animation:nod 2.4s ease-in-out infinite}
+.rkb-rig[data-expr="angry"] .rkb-head{animation:shake .3s ease 2}
+.rkb-rig[data-expr="shocked"] .rkb-head{animation:jump .35s ease}
+.rkb-rig[data-expr="love"] .rkb-head{animation:tiltUp .6s ease}
+.rkb-rig[data-expr="sad"] .rkb-head{animation:sag 1.4s ease-in-out infinite}
+.rkb-rig[data-expr="proud"] .rkb-head{animation:tiltUp .6s ease}
+.rkb-rig[data-expr="surprised"] .rkb-head{animation:jump .4s ease}
+@keyframes tiltUp{to{transform:rotate(-6deg)}}
+@keyframes tiltThink{0%,100%{transform:rotate(0)}50%{transform:rotate(-7deg)}}
+@keyframes nod{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+@keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+@keyframes jump{50%{transform:translateY(-8px)}}
+@keyframes sag{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(5px) rotate(-2deg)}}
+
+.rkb-core{transition:r .35s ease}
+.rkb-rig[data-hair-state="processing"] .rkb-core{animation:corePulse 1s ease-in-out infinite}
+.rkb-rig[data-hair-state="happy"] .rkb-core{animation:corePulse 1.6s ease-in-out infinite}
+.rkb-rig[data-hair-state="thinking"] .rkb-core{animation:corePulse 1.4s ease-in-out infinite}
+.rkb-rig[data-hair-state="sleeping"] .rkb-core{animation:none;opacity:.55}
+.rkb-rig[data-emotion="angry"] .rkb-core{filter:hue-rotate(-60deg) saturate(1.4)}
+.rkb-rig[data-emotion="excited"] .rkb-core{filter:saturate(1.4)}
+.rkb-rig[data-emotion="sad"] .rkb-core{filter:saturate(.6) brightness(.85)}
+.rkb-rig[data-emotion="calm"] .rkb-core{filter:saturate(.9)}
+@keyframes corePulse{50%{r:30}}
+
+.rkb-rig[data-emotion="excited"] svg{filter:drop-shadow(0 0 26px rgba(69,233,255,.55))}
+.rkb-rig[data-emotion="angry"] svg{filter:drop-shadow(0 0 24px rgba(255,90,122,.6))}
+.rkb-rig[data-emotion="sad"] svg{filter:drop-shadow(0 0 14px rgba(122,140,255,.35))}
+.rkb-rig[data-emotion="calm"] svg{filter:drop-shadow(0 0 12px rgba(69,233,255,.25))}
+.rkb-rig[data-emotion="proud"] svg{filter:drop-shadow(0 0 22px rgba(255,209,92,.45))}
+
+/* Gestures */
+.rkb-rig.g-wave .rkb-arm.R{transform-origin:top center;animation:wave 1.2s ease-in-out}
+@keyframes wave{0%,100%{transform:rotate(0)}25%{transform:rotate(-60deg)}75%{transform:rotate(-80deg)}}
+.rkb-rig.g-clap .rkb-arm.L,.rkb-rig.g-clap .rkb-arm.R{animation:clap .35s ease-in-out 4}
+@keyframes clap{50%{transform:translateX(var(--clap-dir,10px)) rotate(-10deg)}}
+.rkb-rig.g-salute .rkb-arm.R{animation:salute .9s ease-in-out}
+@keyframes salute{50%{transform:rotate(-100deg) translateY(-30px)}}
+.rkb-rig.g-thumbsup .rkb-hand.R{animation:thumb .8s ease-in-out}
+@keyframes thumb{50%{transform:translateY(-10px) scale(1.15)}}
+.rkb-rig.g-heart .rkb-arm.L,.rkb-rig.g-heart .rkb-arm.R{animation:heart .9s ease-in-out}
+@keyframes heart{50%{transform:translateY(-10px) rotate(-8deg)}}
+.rkb-rig.g-stop .rkb-arm.R{animation:stop .9s ease-in-out}
+@keyframes stop{50%{transform:rotate(-90deg) translateY(-24px)}}
+.rkb-rig.g-quiet .rkb-hand.R{animation:quiet .9s ease-in-out}
+@keyframes quiet{50%{transform:translateY(-26px)}}
+.rkb-rig.g-point .rkb-arm.R{animation:point .9s ease-in-out}
+@keyframes point{50%{transform:rotate(-70deg) translateY(-16px)}}
+.rkb-rig.g-confused .rkb-head{animation:tiltThink 1.2s ease-in-out}
+.rkb-rig.g-celebrate .rkb-arm.L,.rkb-rig.g-celebrate .rkb-arm.R{animation:celebrate .5s ease-in-out 3}
+@keyframes celebrate{50%{transform:translateY(-12px) rotate(-15deg)}}
+
+/* Idle */
+.rkb-rig.idle-look .rkb-eye{animation:idleLook 2.2s ease-in-out}
+@keyframes idleLook{25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+.rkb-rig.idle-breathe svg{animation:breathe 4s ease-in-out infinite}
+@keyframes breathe{50%{transform:translateY(-3px)}}
+.rkb-rig.idle-stretch .rkb-arm.L,.rkb-rig.idle-stretch .rkb-arm.R{animation:stretch 1.6s ease-in-out}
+@keyframes stretch{40%{transform:translateY(-14px) rotate(-10deg)}}
+.rkb-rig.idle-yawn .rkb-head{animation:yawn 1.8s ease-in-out}
+@keyframes yawn{50%{transform:translateY(3px) scale(1.03)}}
+.rkb-rig.idle-sleep .rkb-head{animation:nod 3s ease-in-out infinite}
+.rkb-rig.idle-play .rkb-hand.R{animation:play 1.4s ease-in-out}
+@keyframes play{50%{transform:translate(6px,-8px)}}
+
+/* ================== PERFORMANCE ================== */
+body[data-perf="low"] .rkb-bg{opacity:.55}
+body[data-perf="low"] *{animation-duration:1.4s !important}
+body[data-perf="high"] .rkb-bg{opacity:1}
+body[data-reduced="1"] *{animation:none !important;transition:none !important}
+
+/* ================== CHAT ROW ================== */
+.chat-row{display:none;grid-template-columns:1fr auto auto;gap:6px}
+.chat-row.on{display:grid}
+.chat-row input{padding:10px 12px;background:rgba(5,12,24,.7);border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--text);outline:none}
+
+@media(max-width:520px){.toast-stack{top:auto;bottom:90px;right:10px;left:10px;max-width:none}.context-panel{min-width:0;max-width:calc(100% - 24px)}}
+</style>
+</head>
+<body data-theme="cyber-cyan" data-perf="medium">
+
+<canvas id="rkbBg" class="rkb-bg" aria-hidden="true"></canvas>
+
+<!-- BOOT -->
+<div class="boot" id="boot" role="dialog" aria-label="RKB boot">
+  <div class="boot-logo">
+    <img src="logo.png" alt="RKB" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+    <span class="fallback">R</span>
+  </div>
+  <div class="boot-title">RKB</div>
+  <div class="boot-sub">Real-Time Knowledge Buddy AI</div>
+  <div class="boot-log" id="bootLog"></div>
+  <div class="boot-bar"><i id="bootBar"></i></div>
+</div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">
+      <img class="logo-img" src="logo.png" alt="RKB" onerror="this.parentNode.classList.add('no-img')">
+      <span class="logo-fallback">R</span>
+    </div>
+    <div class="brand-text">
+      <h1>RKB</h1>
+      <small>Real-Time Knowledge Buddy AI</small>
+    </div>
+    <span class="status-pill" id="statusPill"><i></i><span>ONLINE</span></span>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="btnPerformance" aria-label="Performance">⚡<span class="lbl">Perf</span></button>
+    <button class="icon-btn" id="btnSound" aria-label="Sound">🔊<span class="lbl">Sound</span></button>
+    <button class="icon-btn" id="btnPrivacy" aria-label="Privacy">🔐<span class="lbl">Privacy</span></button>
+    <button class="icon-btn" id="btnDesktopToggle" aria-label="Companion" style="display:none">🖥<span class="lbl">Companion</span></button>
+    <button class="icon-btn" id="btnReset" aria-label="Reset">↺<span class="lbl">Reset</span></button>
+    <button class="icon-btn mobile-only" id="btnDrawer" aria-label="Menu">☰</button>
+    <button class="icon-btn mobile-only" id="btnInspector" aria-label="Inspector">⚙</button>
+  </div>
+</header>
+
+<!-- SHELL -->
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar" aria-label="RKB sections">
+    <div class="lvl-mini" id="lvlMini">
+      <div class="row1"><span>LEVEL</span><b id="lvlMiniLvl">1</b></div>
+      <div class="row1"><span id="lvlMiniRank">AI Explorer</span><b id="lvlMiniXP">0 XP</b></div>
+      <div class="bar"><i id="lvlMiniBar"></i></div>
+    </div>
+    <nav class="nav-groups" id="navGroups"></nav>
+    <div class="sidebar-foot">
+      <div class="dna-mini"><span class="dna-dot"></span><span id="dnaMiniLabel">DNA v4 · local</span></div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <main class="stage" id="stage">
+    <div class="stage-head">
+      <div class="stage-title">
+        <h2 id="stageTitle">Character Studio</h2>
+        <p id="stageSub">Your AI. Everywhere. Anytime.</p>
+      </div>
+      <div class="stage-tools">
+        <button class="chip-btn" id="btnTestExpr">✨ Expressions</button>
+        <button class="chip-btn" id="btnGestureMenu">🖐 Gestures</button>
+        <button class="chip-btn" id="btnVoiceTest">🎤 Voice</button>
+        <button class="chip-btn" id="btnScenes">🎬 Scenes</button>
+        <button class="chip-btn" id="btnChatToggle">💬 Chat</button>
+        <button class="chip-btn" id="btnBootAgain">🔁 Boot</button>
+      </div>
+    </div>
+
+    <div class="mode-bar" id="modeBar" role="tablist"></div>
+
+    <div class="character-stage" id="characterStage">
+      <div class="stage-platform" aria-hidden="true">
+        <svg viewBox="0 0 560 100" preserveAspectRatio="none">
+          <defs>
+            <radialGradient id="platGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="var(--accent)" stop-opacity=".35"/>
+              <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <ellipse cx="280" cy="50" rx="260" ry="42" fill="url(#platGrad)"/>
+          <ellipse cx="280" cy="52" rx="180" ry="30" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".55"/>
+          <ellipse cx="280" cy="56" rx="120" ry="20" fill="none" stroke="var(--accent-2)" stroke-width="1" opacity=".45" stroke-dasharray="6 8"/>
+        </svg>
+      </div>
+
+      <div class="rkb-rig" id="rkbRig" data-expr="normal" data-hair-state="idle" data-emotion="calm" data-intensity="0">
+        <svg id="rkbSvg" viewBox="0 0 400 560" role="img" aria-label="RKB character"></svg>
+        <div class="rkb-speech" id="rkbSpeech">Hey! I'm RKB AI.</div>
+      </div>
+
+      <div class="context-panel" id="contextPanel">
+        <h4>CONTEXT <span class="dot"></span></h4>
+        <div class="row"><span class="k">Source</span><span class="v" id="ctxSource">—</span></div>
+        <div class="row"><span class="k">Type</span><span class="v" id="ctxType">—</span></div>
+        <div class="row"><span class="k">Analysis</span><span class="v" id="ctxAnalysis">Idle</span></div>
+        <div class="row"><span class="k">Updated</span><span class="v" id="ctxUpdated">—</span></div>
+        <div class="actions">
+          <button id="ctxPauseBtn">Pause</button>
+          <button id="ctxStopBtn">Stop Sharing</button>
+        </div>
+      </div>
+
+      <div class="stage-hud">
+        <div class="hud-item"><span class="hud-k">STATE</span><span class="hud-v" id="hudState">idle</span></div>
+        <div class="hud-item"><span class="hud-k">EMOTION</span><span class="hud-v" id="hudEmotion">calm</span></div>
+        <div class="hud-item"><span class="hud-k">LANG</span><span class="hud-v" id="hudLang">English</span></div>
+        <div class="hud-item"><span class="hud-k">MODE</span><span class="hud-v" id="hudMode">Universal</span></div>
+      </div>
+    </div>
+
+    <div class="chat-row" id="chatRow">
+      <input id="chatInput" type="text" placeholder="Ask RKB anything…">
+      <button class="btn primary" id="chatSend">Send</button>
+      <button class="btn" id="chatVoice" title="Voice input">🎤</button>
+    </div>
+
+    <div class="quickbar" role="toolbar">
+      <button class="qbtn" data-nav="head">🎭<span>Head</span></button>
+      <button class="qbtn" data-nav="eyes">👁<span>Eyes</span></button>
+      <button class="qbtn" data-nav="hair">💇<span>Hair</span></button>
+      <button class="qbtn" data-nav="clothing">👕<span>Cloth</span></button>
+      <button class="qbtn" data-nav="accessories">🎒<span>Gear</span></button>
+      <button class="qbtn" data-nav="desktop">🖥<span>Desktop</span></button>
+    </div>
+  </main>
+
+  <aside class="inspector" id="inspector" aria-label="Configuration panel">
+    <div class="inspector-head">
+      <h3 id="inspTitle">Character Studio</h3>
+      <button class="icon-btn small" id="btnCloseInspector" aria-label="Close">✕</button>
+    </div>
+    <div class="inspector-body" id="inspBody"></div>
+  </aside>
+</div>
+
+<!-- DEBUG HUD -->
+<div class="debug-hud" id="debugHud" hidden>
+  <div><b>EMOTION</b> <span id="dbgEmotion">calm</span></div>
+  <div><b>INTENSITY</b> <span id="dbgIntensity">0.00</span></div>
+  <div><b>ACTION</b> <span id="dbgAction">idle</span></div>
+  <div><b>GESTURE</b> <span id="dbgGesture">—</span></div>
+  <div><b>VOICE</b> <span id="dbgVoice">friendly</span></div>
+  <div><b>STATE</b> <span id="dbgState">idle</span></div>
+  <div><b>MODE</b> <span id="dbgMode">universal</span></div>
+  <div><b>CONTEXT</b> <span id="dbgContext">—</span></div>
+  <div><b>VISION</b> <span id="dbgVision">idle</span></div>
+  <div><b>MEMORY</b> <span id="dbgMemory">0</span></div>
+  <div><b>SCREEN FPS</b> <span id="dbgFps">0</span></div>
+  <div><b>LATENCY</b> <span id="dbgLatency">—</span></div>
+  <div><b>DESKTOP</b> <span id="dbgDesktop">off</span></div>
+  <div><b>HOTKEY</b> <span id="dbgHotkey">—</span></div>
+</div>
+
+<!-- OVERLAYS -->
+<div class="toast-stack" id="toasts" role="status" aria-live="polite"></div>
+<div class="modal-root" id="modalRoot" hidden></div>
+
+<script>
+/* ==========================================================================
+   RKB v4 — PHASE 1 + 2 + 3 + 4
+   Single-file SPA backed by server.js. Adds Electron desktop bridge.
+   ========================================================================== */
+(() => {
+"use strict";
+
+const $ = id => document.getElementById(id);
+const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const rand = (a, b) => a + Math.random() * (b - a);
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+/* ==================== DESKTOP ENVIRONMENT DETECTION ==================== */
+const IS_DESKTOP = typeof window !== "undefined" && !!(window.rkbDesktop && window.rkbDesktop.isDesktop);
+if (IS_DESKTOP) {
+  document.addEventListener("DOMContentLoaded", () => {
+    document.body.dataset.desktop = "1";
+    const bt = $("btnDesktopToggle"); if (bt) bt.style.display = "inline-flex";
+  });
+}
+
+/* ==================== CONFIG + PERSISTENCE ==================== */
+const STORAGE_KEY = "rkb.config.v4";
+const LEGACY_KEYS = ["rkb.config.v3", "rkb.config.v2", "rkb.config.v1"];
+
+const DEFAULTS = {
+  meta: { version: 4, created: Date.now() },
+  character: {
+    headShape: "round", headSize: 1, faceWidth: 1, faceHeight: 1,
+    jaw: "soft", ears: "disc", antenna: "stub", sideModules: false,
+    neck: "ring", headGlow: 0.6, material: "titanium", style: "neutral"
+  },
+  eyes: { style: "cyber", size: 1, spacing: 1, glow: 0.8, color: "#45e9ff", pupil: "round", animation: "blink", intensity: 1 },
+  hair: {
+    style: "cyber", color: "#45e9ff", color2: "#b36cff", gradient: true, glow: 0.6,
+    length: 1, thickness: 1, density: 1, highlight: "#eafcff", flow: 1, wind: 0.4,
+    animation: "flow", metallic: 0.3, holographic: 0.2
+  },
+  body: { preset: "orb", torso: 1, shoulders: 1, arms: 1, core: 1 },
+  clothing: {
+    outfit: "cyber", primary: "#0b1a33", secondary: "#45e9ff", accent: "#b36cff",
+    glow: 0.4, metal: 0.6, pattern: "none", emblem: true
+  },
+  accessories: ["headphones"],
+  voice: { style: "friendly", speed: 1, pitch: 1, volume: 1, emotion: "neutral" },
+  personality: { preset: "friendly", tone: .5, humor: .5, energy: .5, formality: .5, friendliness: .7, technicality: .5, length: .5, creativity: .5, emotionIntensity: .7 },
+  language: { code: "en", mode: "english" },
+  theme: { preset: "cyber-cyan", accent: "#45e9ff", accent2: "#b36cff", bg0: "#050914", bg1: "#0a1422", glass: .72, border: .55, blur: 0, radius: 14, anim: 1, particles: 1 },
+  background: { preset: "cyber-grid", density: 1, speed: 1, glow: .6 },
+  sound: { enabled: true, volume: .55 },
+  performance: "medium",
+  reducedMotion: false,
+  behavior: { idleBob: true, autoBlink: true, autoLook: true },
+  acting: { enabled: true, autoGesture: true },
+  emotion: { current: "calm", previous: "calm", intensity: 0, timestamp: 0, autoFromChat: true },
+  idle: { enabled: true, reactivePersonality: true, lastActivity: Date.now() },
+  achievements: { unlocked: {}, progress: {} },
+  xp: { total: 0, level: 1, nextLevelXP: 500, lastAward: {} },
+  debugHud: false,
+  mode: "universal",
+  memory: {
+    enabled: true, temporary: false, items: [],
+    prefs: { nickname: "", defaultLanguage: "", personalityPreset: "", replyLength: "" }
+  },
+  privacy: { screenSharing: false, camera: false, memoryOn: true, timelineOn: true, dataStorage: "local" },
+  context: { type: "none", source: "", title: "", summary: "", lastText: "", confidence: 0, permission: "none", updatedAt: 0, autoFromChat: true },
+  screenWatch: { enabled: false, source: "tab", sampling: "balanced", analysis: "automatic", cooldown: 6000 },
+  vision: { provider: "demo", model: "", configured: false },
+  timeline: { enabled: true, items: [] },
+  stage: { scale: 1, position: 0, rotation: 0, aura: 0.7, particles: 1, brightness: 1, camera: "full" },
+  panimalar: { source: "demo", categories: {} },
+  lab: { visionAI: false, wakeWord: false, advancedMemory: false, emotionRecognition: false, toolCalling: false },
+  // ----- Phase 4 desktop -----
+  desktop: {
+    alwaysOnTop: true, clickThrough: false, opacity: 1, scale: 1,
+    displayMode: "full",    // full | companion | hud | character-only
+    hotkey: "Ctrl+Space",
+    hotkeyEnabled: true,
+    autoLaunch: false,
+    autoExecute: { OPEN_URL: false, OPEN_APP: false, OPEN_FOLDER: false, COPY_TEXT: true, READ_TEXT: true, CREATE_NOTE: true, START_TIMER: true }
+  }
+};
+function deepMerge(base, patch) {
+  if (Array.isArray(base)) return Array.isArray(patch) ? patch.slice() : base.slice();
+  if (base && typeof base === "object") {
+    const out = { ...base };
+    if (patch && typeof patch === "object") for (const k of Object.keys(patch)) out[k] = deepMerge(base[k], patch[k]);
+    return out;
+  }
+  return patch !== undefined ? patch : base;
+}
+function loadConfig() {
+  try {
+    let raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) for (const k of LEGACY_KEYS) { raw = localStorage.getItem(k); if (raw) break; }
+    if (!raw) return structuredClone(DEFAULTS);
+    return deepMerge(DEFAULTS, JSON.parse(raw));
+  } catch { return structuredClone(DEFAULTS); }
+}
+let RKB_CONFIG = loadConfig();
+function saveConfig() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(RKB_CONFIG)); } catch {} }
+const getPath = (o, p) => p.split(".").reduce((a, k) => (a == null ? undefined : a[k]), o);
+const setPath = (o, p, v) => { const k = p.split("."); const l = k.pop(); const t = k.reduce((a, x) => (a[x] = a[x] || {}), o); t[l] = v; };
+
+/* ==================== BACKGROUND CANVAS ==================== */
+let bg = null;
+function initBackground() {
+  const cvs = $("rkbBg"); if (!cvs) return { reseed: () => {} };
+  const ctx = cvs.getContext("2d");
+  let W = 0, H = 0, dots = [], t0 = performance.now();
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = cvs.width = innerWidth * dpr; H = cvs.height = innerHeight * dpr;
+    cvs.style.width = innerWidth + "px"; cvs.style.height = innerHeight + "px";
+    seed();
+  }
+  function densityCount() {
+    const p = RKB_CONFIG.performance;
+    const d = RKB_CONFIG.background.density;
+    const base = p === "low" ? 26 : p === "high" ? 110 : 60;
+    return Math.round(base * d);
+  }
+  function seed() {
+    dots = [];
+    const n = densityCount();
+    for (let i = 0; i < n; i++) {
+      dots.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: rand(.4, 2) * (W / innerWidth > 1 ? 1.4 : 1),
+        vy: rand(.1, .45) * RKB_CONFIG.background.speed,
+        hue: Math.random() < .5 ? RKB_CONFIG.theme.accent : RKB_CONFIG.theme.accent2,
+        a: rand(.2, .7)
+      });
+    }
+  }
+  function hexToRgb(hex) {
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || "");
+    return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [69, 233, 255];
+  }
+  function draw() {
+    requestAnimationFrame(draw);
+    if (document.hidden) return;
+    const t = (performance.now() - t0) / 1000;
+    ctx.clearRect(0, 0, W, H);
+    const preset = RKB_CONFIG.background.preset;
+    if (preset === "cyber-grid" || preset === "holographic") {
+      ctx.strokeStyle = `rgba(${hexToRgb(RKB_CONFIG.theme.accent).join(",")},0.05)`;
+      ctx.lineWidth = 1;
+      const step = 42 * (W / innerWidth);
+      const ox = (t * 8 * RKB_CONFIG.background.speed) % step;
+      for (let x = -ox; x < W; x += step) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      for (let y = 0; y < H; y += step) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    }
+    for (const d of dots) {
+      const [r, g, b] = hexToRgb(d.hue);
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(${r},${g},${b},${d.a * RKB_CONFIG.background.glow})`;
+      ctx.shadowBlur = RKB_CONFIG.performance === "high" ? 12 : 5;
+      ctx.shadowColor = `rgba(${r},${g},${b},.8)`;
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fill();
+      d.y -= d.vy;
+      if (d.y < -4) { d.y = H + 4; d.x = Math.random() * W; }
+    }
+    ctx.shadowBlur = 0;
+  }
+  addEventListener("resize", resize);
+  resize(); draw();
+  return { reseed: seed };
+}
+
+/* ==================== MATERIALS ==================== */
+const MATERIALS = {
+  titanium:    { base: "#c9d4dd", dark: "#4a5a68", light: "#f2f8ff", edge: "#eafcff", metal: .65 },
+  ceramic:     { base: "#f4f7fa", dark: "#8a95a1", light: "#ffffff", edge: "#ffffff", metal: .15 },
+  carbon:      { base: "#1a2028", dark: "#0a0d12", light: "#39424d", edge: "#45e9ff", metal: .35 },
+  chrome:      { base: "#dbe5ee", dark: "#5a6470", light: "#ffffff", edge: "#eafcff", metal: .95 },
+  "holographic":{base:"#a8e8ff",dark:"#4a7f9a",light:"#eafcff",edge:"#57f7ff",metal:.2},
+  "neon-energy":{base:"#0a1a2e",dark:"#030814",light:"#45e9ff",edge:"#b36cff",metal:.1},
+  "matte":     { base: "#2a323c", dark: "#0f141a", light: "#54606e", edge: "#8fa9bb", metal: .1 },
+  "transparent":{base:"#7ec8e3",dark:"#2a5a73",light:"#c9efff",edge:"#45e9ff",metal:.05}
+};
+
+/* ==================== CONSTANTS ==================== */
+const HAIR_GROUPS = {
+  "SHORT": ["cyber","military","undercut","swept"],
+  "MEDIUM": ["anime","fringe","layered","gravity"],
+  "LONG": ["mane","flow","samurai","quantum"],
+  "CRAZY": ["flame","crystal","lightning","rgb","plasma","neural","holographic","royal"]
+};
+const EYE_STYLES = ["cyber","human","anime","digital","scanner","led","holo","orb","matrix","minimal"];
+const PUPILS = ["round","dot","vertical","digital","cross","scanner","star","hex","none"];
+const EYE_ANIMS = ["blink","pulse","scan","look","glow","breath","static"];
+const EXPRESSIONS = ["normal","happy","sad","angry","shocked","confused","sleepy","excited","laughing","crying","thinking","suspicious","love","focused","scared","proud","curious","playful","concerned"];
+const OUTFITS = ["cyber","student","developer","gamer","scientist","hacker","business","casual","space","military","researcher","stealth","royal"];
+const ACCESSORIES = ["headphones","cyber-glasses","sunglasses","visor","grad-cap","cap","backpack","laptop","books","controller","shield","trophy","id-card","watch","microphone","drone","tablet","energy-ring"];
+const BODY_PRESETS = ["orb","mini-android","hologram","nano","guardian","humanoid","cyber-android"];
+const GESTURES = ["wave","point","thumbsup","confused","quiet","clap","heart","stop","salute","celebrate"];
+
+/* ==================== RKB v4 LOGO-MATCHED CHARACTER RENDERER ==================== */
+function buildRobotSVG() {
+  const c  = RKB_CONFIG.character,
+        e  = RKB_CONFIG.eyes,
+        h  = RKB_CONFIG.hair,
+        b  = RKB_CONFIG.body,
+        cl = RKB_CONFIG.clothing;
+
+  const cx       = 200;
+  const headCY   = 175;
+  const headRx   = 68 * c.headSize * c.faceWidth;
+  const headRy   = 72 * c.headSize * c.faceHeight;
+  const headTop  = headCY - headRy;
+  const headBot  = headCY + headRy;
+  const neckY    = headBot + 4;
+  const torsoW   = 150 * b.shoulders;
+  const torsoH   = 145 * b.torso;
+  const torsoTop = neckY + 26;
+  const coreY    = torsoTop + torsoH * 0.55;
+
+  const accent   = e.color || "#45e9ff";
+  const accent2  = cl.accent || "#b36cff";
+  const hairA    = h.color  || "#1a1030";
+  const hairB    = h.color2 || "#45e9ff";
+  const eyeSpread= 24 * e.spacing;
+  const eyeY     = headCY + 2;
+
+  /* Hair back layer */
+  const hairBack = `
+    <g class="rkb-hair rkb-hair-back">
+      <path d="M${cx-72} ${headCY-40}
+               Q${cx-90} ${headTop-52} ${cx-40} ${headTop-58}
+               Q${cx-6} ${headTop-72} ${cx+26} ${headTop-56}
+               Q${cx+72} ${headTop-52} ${cx+82} ${headCY-30}
+               L${cx+58} ${headCY-52}
+               L${cx+30} ${headTop-44}
+               L${cx-2} ${headTop-60}
+               L${cx-34} ${headTop-40}
+               L${cx-60} ${headCY-56} Z"
+            fill="url(#hairGrad)" stroke="${hairB}" stroke-width="0.6" opacity="0.95"/>
+    </g>`;
+
+  /* Hair front spikes */
+  const hairFront = `
+    <g class="rkb-hair rkb-hair-front">
+      <path d="M${cx-58} ${headTop+4}
+               Q${cx-66} ${headTop-36} ${cx-30} ${headTop-44}
+               Q${cx-6} ${headTop-64} ${cx+20} ${headTop-46}
+               Q${cx+48} ${headTop-32} ${cx+56} ${headTop+8}
+               L${cx+40} ${headTop-6}
+               L${cx+14} ${headTop-30}
+               L${cx-12} ${headTop-8}
+               L${cx-38} ${headTop-28} Z"
+            fill="url(#hairGrad)" stroke="${hairB}" stroke-width="0.8"/>
+      <path d="M${cx-42} ${headTop-10} Q${cx-20} ${headTop-42} ${cx+4} ${headTop-28}
+               Q${cx+28} ${headTop-40} ${cx+46} ${headTop-14}
+               L${cx+30} ${headTop-20} L${cx+6} ${headTop-38} L${cx-18} ${headTop-18} Z"
+            fill="url(#hairTip)" opacity="0.9"/>
+      <path d="M${cx-24} ${headTop-34} L${cx-16} ${headTop-52} L${cx-8} ${headTop-30} Z"
+            fill="${hairB}" opacity="0.85"/>
+      <path d="M${cx+18} ${headTop-34} L${cx+28} ${headTop-56} L${cx+34} ${headTop-32} Z"
+            fill="${accent2}" opacity="0.85"/>
+    </g>`;
+
+  /* Helmet — white ceramic */
+  const helmet = `
+    <path d="M${cx-headRx} ${headCY}
+             Q${cx-headRx} ${headTop} ${cx-headRx*0.55} ${headTop-6}
+             Q${cx} ${headTop-14} ${cx+headRx*0.55} ${headTop-6}
+             Q${cx+headRx} ${headTop} ${cx+headRx} ${headCY}
+             Q${cx+headRx} ${headBot-4} ${cx+headRx*0.6} ${headBot}
+             Q${cx} ${headBot+6} ${cx-headRx*0.6} ${headBot}
+             Q${cx-headRx} ${headBot-4} ${cx-headRx} ${headCY} Z"
+          fill="url(#helmetGrad)" stroke="#7a8698" stroke-width="1.2"/>
+    <path d="M${cx-headRx+4} ${headCY-6}
+             Q${cx-headRx+4} ${headTop+8} ${cx} ${headTop+4}
+             Q${cx+headRx-4} ${headTop+8} ${cx+headRx-4} ${headCY-6}"
+          fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.7"/>`;
+
+  /* Visor — glossy black with cyan rim */
+  const visor = `
+    <g class="rkb-visor">
+      <path d="M${cx-headRx+8} ${headCY-14}
+               Q${cx-headRx+6} ${headCY-38} ${cx-headRx*0.5} ${headCY-40}
+               Q${cx} ${headCY-44} ${cx+headRx*0.5} ${headCY-40}
+               Q${cx+headRx-6} ${headCY-38} ${cx+headRx-8} ${headCY-14}
+               Q${cx+headRx-10} ${headCY+30} ${cx+headRx*0.5} ${headCY+34}
+               Q${cx} ${headCY+38} ${cx-headRx*0.5} ${headCY+34}
+               Q${cx-headRx+10} ${headCY+30} ${cx-headRx+8} ${headCY-14} Z"
+            fill="url(#visorGrad)" stroke="${accent}" stroke-width="0.8" opacity="0.98"/>
+      <path d="M${cx-headRx+12} ${headCY-20}
+               Q${cx-headRx*0.3} ${headCY-36} ${cx+headRx*0.2} ${headCY-34}
+               Q${cx+headRx*0.7} ${headCY-32} ${cx+headRx-14} ${headCY-18}
+               Q${cx} ${headCY-26} ${cx-headRx+12} ${headCY-20} Z"
+            fill="url(#visorHi)"/>
+      <ellipse cx="${cx-headRx*0.35}" cy="${headCY-24}" rx="22" ry="4" fill="#ffffff" opacity="0.18"/>
+    </g>`;
+
+  /* Crescent eyes */
+  const crescent = (x) => `
+    <g class="rkb-eye rkb-eye-crescent">
+      <path d="M${x-14} ${eyeY+2} Q${x} ${eyeY-12} ${x+14} ${eyeY+2}"
+            fill="none" stroke="${accent}" stroke-width="4"
+            stroke-linecap="round" filter="url(#glow)"/>
+      <path d="M${x-14} ${eyeY+2} Q${x} ${eyeY-12} ${x+14} ${eyeY+2}"
+            fill="none" stroke="#ffffff" stroke-width="1.6"
+            stroke-linecap="round" opacity="0.9"/>
+    </g>`;
+  const eyeL = crescent(cx - eyeSpread - 8);
+  const eyeR = crescent(cx + eyeSpread + 8);
+
+  /* Mouth */
+  const mouth = `
+    <g class="rkb-mouth">
+      <path d="M${cx-8} ${headCY+22} Q${cx} ${headCY+26} ${cx+8} ${headCY+22}"
+            stroke="${accent}" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.85"/>
+    </g>`;
+
+  /* Ear modules */
+  const earModule = (side) => {
+    const sx = side === "L" ? -1 : 1;
+    const x = cx + sx * (headRx + 10);
+    return `
+      <g class="rkb-ear rkb-ear-${side}">
+        <ellipse cx="${x}" cy="${headCY+4}" rx="16" ry="20"
+                 fill="url(#helmetGrad)" stroke="#7a8698" stroke-width="1"/>
+        <ellipse cx="${x}" cy="${headCY+4}" rx="10" ry="14"
+                 fill="url(#jointGrad)" stroke="${accent}" stroke-width="1"/>
+        <circle cx="${x}" cy="${headCY+4}" r="6"
+                fill="none" stroke="${accent}" stroke-width="1.5" filter="url(#glow)"/>
+        ${side === "L"
+          ? `<text x="${x}" y="${headCY+7}" text-anchor="middle"
+                    font-family="Orbitron, system-ui" font-weight="900"
+                    font-size="8" fill="${accent}">R</text>`
+          : `<circle cx="${x}" cy="${headCY+4}" r="2" fill="${accent}"/>`}
+      </g>`;
+  };
+
+  /* Antenna */
+  const antenna = `
+    <g class="rkb-antenna">
+      <path d="M${cx-30} ${headTop+4} Q${cx-58} ${headTop-34} ${cx-44} ${headTop-64}"
+            stroke="url(#helmetGrad)" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M${cx-30} ${headTop+4} Q${cx-58} ${headTop-34} ${cx-44} ${headTop-64}"
+            stroke="${accent}" stroke-width="1.4" fill="none" stroke-linecap="round" filter="url(#glow)" opacity="0.9"/>
+      <circle cx="${cx-44}" cy="${headTop-66}" r="4" fill="${accent}" filter="url(#glowStrong)"/>
+      <path d="M${cx-46} ${headTop+2} Q${cx-72} ${headTop-20} ${cx-66} ${headTop-48}"
+            stroke="url(#helmetGrad)" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.85"/>
+      <circle cx="${cx-66}" cy="${headTop-50}" r="3" fill="${accent2}" filter="url(#glow)"/>
+    </g>`;
+
+  /* Neck */
+  const neck = `
+    <g class="rkb-neck">
+      <rect x="${cx-16}" y="${neckY}" width="32" height="22" rx="4"
+            fill="url(#jointGrad)" stroke="#2a3340" stroke-width="1"/>
+      <ellipse cx="${cx}" cy="${neckY+4}" rx="18" ry="4"
+               fill="none" stroke="${accent}" stroke-width="1.4" filter="url(#glow)" opacity="0.9"/>
+    </g>`;
+
+  /* Torso */
+  const torso = `
+    <g class="rkb-torso">
+      <path d="M${cx-torsoW/2} ${torsoTop}
+               Q${cx-torsoW/2} ${torsoTop+20} ${cx-torsoW*0.42} ${torsoTop+40}
+               L${cx-torsoW*0.38} ${coreY+torsoH*0.55}
+               Q${cx} ${coreY+torsoH*0.55+16} ${cx+torsoW*0.38} ${coreY+torsoH*0.55}
+               L${cx+torsoW*0.42} ${torsoTop+40}
+               Q${cx+torsoW/2} ${torsoTop+20} ${cx+torsoW/2} ${torsoTop} Z"
+            fill="url(#bodyGrad)" stroke="#7a8698" stroke-width="1.2"/>
+      <path d="M${cx-torsoW*0.30} ${torsoTop+14}
+               Q${cx} ${torsoTop+6} ${cx+torsoW*0.30} ${torsoTop+14}"
+            stroke="#ffffff" stroke-width="1.6" fill="none" opacity="0.7"/>
+      <rect x="${cx-torsoW*0.38}" y="${coreY+torsoH*0.42}"
+            width="${torsoW*0.76}" height="20" rx="4"
+            fill="url(#jointGrad)" stroke="#2a3340" stroke-width="0.8"/>
+      <g class="rkb-emblem">
+        <circle cx="${cx}" cy="${torsoTop+42}" r="14"
+                fill="url(#jointGrad)" stroke="${accent}" stroke-width="1.6"/>
+        <text x="${cx}" y="${torsoTop+47}" text-anchor="middle"
+              font-family="Orbitron, system-ui" font-weight="900"
+              font-size="14" fill="${accent}" filter="url(#glow)">R</text>
+      </g>
+      <circle class="rkb-core" cx="${cx}" cy="${coreY}" r="${16*b.core}"
+              fill="url(#coreGrad)" filter="url(#glowStrong)"/>
+      <circle cx="${cx}" cy="${coreY}" r="${26*b.core}"
+              fill="none" stroke="${accent}" stroke-width="1" opacity="0.5"/>
+      <circle cx="${cx}" cy="${coreY}" r="${36*b.core}"
+              fill="none" stroke="${accent}" stroke-width="0.6" opacity="0.3" stroke-dasharray="3 6"/>
+    </g>`;
+
+  /* Arms */
+  const arm = (side) => {
+    const sx = side === "L" ? -1 : 1;
+    const shoulderX = cx + sx * (torsoW/2 - 6);
+    const shoulderY = torsoTop + 12;
+    const elbowX    = cx + sx * (torsoW/2 + 22 * b.arms);
+    const elbowY    = shoulderY + 62 * b.arms;
+    const handX     = cx + sx * (torsoW/2 + 30 * b.arms);
+    const handY     = elbowY + 58 * b.arms;
+    return `
+      <g class="rkb-arm ${side}"
+         style="transform-origin:${shoulderX}px ${shoulderY}px">
+        <circle cx="${shoulderX}" cy="${shoulderY}" r="22"
+                fill="url(#bodyGrad)" stroke="#7a8698" stroke-width="1"/>
+        <path d="M${shoulderX} ${shoulderY+18} L${elbowX} ${elbowY}"
+              stroke="url(#bodyGrad)" stroke-width="18" stroke-linecap="round"/>
+        <path d="M${shoulderX} ${shoulderY+18} L${elbowX} ${elbowY}"
+              stroke="${accent}" stroke-width="1" fill="none" opacity="0.55"/>
+        <circle cx="${elbowX}" cy="${elbowY}" r="10"
+                fill="url(#jointGrad)" stroke="${accent}" stroke-width="1"/>
+        <path d="M${elbowX} ${elbowY+8} L${handX} ${handY}"
+              stroke="url(#bodyGrad)" stroke-width="15" stroke-linecap="round"/>
+        <circle class="rkb-hand ${side}" cx="${handX}" cy="${handY+6}" r="12"
+                fill="url(#bodyGrad)" stroke="#7a8698" stroke-width="1"/>
+        <circle cx="${handX}" cy="${handY+6}" r="4"
+                fill="${accent}" filter="url(#glow)"/>
+      </g>`;
+  };
+
+  /* Accessories */
+  const accMap = {
+    headphones: `<g class="rkb-acc"><path d="M${cx-headRx-18} ${headCY} Q${cx-headRx-24} ${headTop-12} ${cx} ${headTop-24} Q${cx+headRx+24} ${headTop-12} ${cx+headRx+18} ${headCY}" fill="none" stroke="${accent2}" stroke-width="5" stroke-linecap="round" filter="url(#glow)"/></g>`,
+    "cyber-glasses": `<g class="rkb-acc"><rect x="${cx-eyeSpread-46}" y="${eyeY-20}" width="${eyeSpread*2+92}" height="34" rx="6" fill="rgba(0,20,40,.45)" stroke="${accent}" stroke-width="1.4" filter="url(#glow)"/></g>`,
+    sunglasses: `<g class="rkb-acc"><rect x="${cx-eyeSpread-42}" y="${eyeY-16}" width="${eyeSpread*2+84}" height="28" rx="4" fill="rgba(0,0,0,.85)" stroke="rgba(255,255,255,.35)" stroke-width="1"/></g>`,
+    "grad-cap": `<g class="rkb-acc"><rect x="${cx-headRx-6}" y="${headTop-16}" width="${headRx*2+12}" height="6" rx="2" fill="#1a1024" stroke="${accent}" stroke-width="1"/><rect x="${cx-22}" y="${headTop-30}" width="44" height="16" fill="#1a1024" stroke="${accent}" stroke-width="1"/></g>`,
+    visor: `<g class="rkb-acc"><rect x="${cx-headRx-2}" y="${eyeY-28}" width="${headRx*2+4}" height="56" rx="10" fill="rgba(0,10,25,.55)" stroke="${accent}" stroke-width="1.4" filter="url(#glow)"/></g>`,
+    "energy-ring": `<g class="rkb-acc"><ellipse cx="${cx}" cy="${coreY+torsoH*0.9}" rx="86" ry="14" fill="none" stroke="${accent}" stroke-width="2" opacity="0.75" filter="url(#glowStrong)"/></g>`,
+    watch: `<g class="rkb-acc"><circle cx="${cx+70}" cy="${coreY+22}" r="8" fill="url(#jointGrad)" stroke="${accent}" stroke-width="1.4" filter="url(#glow)"/></g>`
+  };
+
+  const floor = `
+    <ellipse cx="${cx}" cy="560" rx="${torsoW*1.05}" ry="16" fill="rgba(0,0,0,.55)"/>
+    <ellipse cx="${cx}" cy="552" rx="${torsoW*0.75}" ry="10" fill="none" stroke="${accent}" stroke-width="1.2" opacity="0.65" filter="url(#glow)"/>
+    <ellipse cx="${cx}" cy="552" rx="${torsoW*0.5}" ry="6" fill="none" stroke="${accent2}" stroke-width="0.8" opacity="0.45" stroke-dasharray="4 6"/>`;
+
+  const aura = `<circle cx="${cx}" cy="${coreY-60}" r="190" fill="url(#auraGrad)" opacity="0.85"/>`;
+
+  return `
+  <defs>
+    <linearGradient id="helmetGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.35" stop-color="#e9eff6"/>
+      <stop offset="0.7" stop-color="#b7c2d1"/>
+      <stop offset="1" stop-color="#7d8998"/>
+    </linearGradient>
+    <linearGradient id="visorGrad" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0" stop-color="#1e2a38"/>
+      <stop offset="0.35" stop-color="#0a1220"/>
+      <stop offset="0.75" stop-color="#050a14"/>
+      <stop offset="1" stop-color="#000205"/>
+    </linearGradient>
+    <linearGradient id="visorHi" x1="0.2" y1="0" x2="0.9" y2="0.7">
+      <stop offset="0" stop-color="#78b8e8" stop-opacity="0.45"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bodyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6fafe"/>
+      <stop offset="0.5" stop-color="#c9d3e1"/>
+      <stop offset="1" stop-color="#8a95a8"/>
+    </linearGradient>
+    <linearGradient id="jointGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a3340"/>
+      <stop offset="1" stop-color="#0a1018"/>
+    </linearGradient>
+    <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a1850"/>
+      <stop offset="0.45" stop-color="#1a1030"/>
+      <stop offset="1" stop-color="#08061a"/>
+    </linearGradient>
+    <linearGradient id="hairTip" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${hairB}"/>
+      <stop offset="0.5" stop-color="${accent2}"/>
+      <stop offset="1" stop-color="${hairB}"/>
+    </linearGradient>
+    <radialGradient id="coreGrad" cx="0.5" cy="0.5" r="0.55">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.35" stop-color="${accent}"/>
+      <stop offset="1" stop-color="${accent}" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="auraGrad" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="${accent}" stop-opacity="${0.28*c.headGlow}"/>
+      <stop offset="0.6" stop-color="${accent2}" stop-opacity="${0.12*c.headGlow}"/>
+      <stop offset="1" stop-color="${accent}" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowStrong" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  ${floor}
+  ${aura}
+  ${hairBack}
+  ${arm("L")}
+  ${arm("R")}
+  ${neck}
+  ${torso}
+
+  <g class="rkb-head" style="transform-origin:${cx}px ${headCY}px">
+    ${earModule("L")}
+    ${earModule("R")}
+    ${antenna}
+    ${helmet}
+    ${visor}
+    ${eyeL}
+    ${eyeR}
+    ${mouth}
+    ${hairFront}
+    ${(RKB_CONFIG.accessories || []).map(a => accMap[a] || "").join("")}
+  </g>`;
+}
+
+/* ==================== RENDERER ==================== */
+function renderCharacter() {
+  const svg = $("rkbSvg"); if (!svg) return;
+  svg.innerHTML = buildRobotSVG();
+  applyTheme();
+  const langLabel = LANGUAGES.find(l => l.code === RKB_CONFIG.language.code)?.label || "English";
+  const el2 = $("hudLang"); if (el2) el2.textContent = langLabel;
+  const s = RKB_CONFIG.stage;
+  const rig = $("rkbRig"); if (!rig) return;
+  rig.style.transform = `translateY(${s.position}px) scale(${s.scale}) rotate(${s.rotation}deg)`;
+  rig.style.filter = `brightness(${s.brightness})`;
+}
+
+/* ==================== SPEECH / EXPRESSIONS / GESTURES ==================== */
+const SPEECH_MAP = {
+  normal: "Hey! I'm RKB AI.", idle: "Hey! I'm RKB AI.", happy: "Nice! ✨",
+  sad: "Oh... okay.", angry: "Careful.", shocked: "Whoa!",
+  confused: "Hmm... let's inspect that.", sleepy: "Zzz...", excited: "Let's go!",
+  laughing: "Ha ha ha!", crying: "I... it's fine.", thinking: "Thinking...",
+  suspicious: "Really?", love: "❤", focused: "Focused.", scared: "Uh oh.",
+  proud: "Did it!", listening: "I'm listening...", speaking: "Speaking...",
+  warning: "Careful!", success: "Done! 🚀", error: "Something went wrong.",
+  scanning: "Scanning context...", curious: "Interesting…", playful: "Hehe 😜", concerned: "Hmm, okay."
+};
+function showSpeech(text, ms = 2200) {
+  const s = $("rkbSpeech"); if (!s) return;
+  s.textContent = text;
+  s.classList.add("on");
+  clearTimeout(showSpeech._t);
+  showSpeech._t = setTimeout(() => s.classList.remove("on"), ms);
+}
+function applyExpression(name) {
+  $("rkbRig").dataset.expr = name;
+  const st = $("hudState"); if (st) st.textContent = name;
+  RKB_CONFIG.expression = name;
+  if (SPEECH_MAP[name]) showSpeech(SPEECH_MAP[name]);
+}
+function setHairState(state) { $("rkbRig").dataset.hairState = state; }
+function playGesture(name, ms = 1600) {
+  if (!GESTURES.includes(name)) return;
+  const r = $("rkbRig");
+  r.classList.remove(...GESTURES.map(g => "g-" + g));
+  void r.offsetWidth;
+  r.classList.add("g-" + name);
+  RKB_CONFIG.__lastGesture = name;
+  setTimeout(() => r.classList.remove("g-" + name), ms);
+}
+
+/* ==================== EMOTION ENGINE ==================== */
+const EMOTIONS = {
+  happy:      { icon: "😊", color: "#63ffbd", hair: "happy",      voiceMod: { speed: 1.05, pitch: 1.05 } },
+  excited:    { icon: "🔥", color: "#ffd15c", hair: "happy",      voiceMod: { speed: 1.15, pitch: 1.10 } },
+  curious:    { icon: "🤔", color: "#45e9ff", hair: "thinking",   voiceMod: { speed: 1.00, pitch: 1.00 } },
+  confused:   { icon: "😕", color: "#a78bfa", hair: "thinking",   voiceMod: { speed: .95,  pitch: 1.00 } },
+  sad:        { icon: "😢", color: "#7a8cff", hair: "idle",       voiceMod: { speed: .88,  pitch: .95  } },
+  angry:      { icon: "😠", color: "#ff4d69", hair: "angry",      voiceMod: { speed: 1.05, pitch: .90  } },
+  surprised:  { icon: "😮", color: "#ffd15c", hair: "happy",      voiceMod: { speed: 1.10, pitch: 1.10  } },
+  focused:    { icon: "🎯", color: "#45e9ff", hair: "processing", voiceMod: { speed: .95,  pitch: 1.00  } },
+  sleepy:     { icon: "😴", color: "#7a8cff", hair: "sleeping",   voiceMod: { speed: .80,  pitch: .90  } },
+  proud:      { icon: "🦁", color: "#ffd15c", hair: "happy",      voiceMod: { speed: 1.00, pitch: 1.05  } },
+  playful:    { icon: "😜", color: "#b36cff", hair: "happy",      voiceMod: { speed: 1.10, pitch: 1.15  } },
+  calm:       { icon: "🌊", color: "#45e9ff", hair: "idle",       voiceMod: { speed: 1.00, pitch: 1.00  } },
+  concerned:  { icon: "😟", color: "#ffa94d", hair: "idle",       voiceMod: { speed: .95,  pitch: .98  } }
+};
+const emotionEngine = {
+  current: "calm", previous: "calm", intensity: 0, timestamp: 0,
+  set(emotion, intensity = 0.6) {
+    if (!EMOTIONS[emotion]) emotion = "calm";
+    this.previous = this.current;
+    this.current = emotion;
+    this.intensity = clamp(intensity, 0, 1);
+    this.timestamp = Date.now();
+    const rig = $("rkbRig");
+    rig.dataset.emotion = emotion;
+    rig.dataset.intensity = this.intensity.toFixed(2);
+    const em = $("hudEmotion"); if (em) em.textContent = emotion;
+    if (RKB_CONFIG.hair.animation !== "static") setHairState(EMOTIONS[emotion].hair);
+    if (this.intensity > .7) rig.style.setProperty("--glow", "1");
+    else if (this.intensity > .4) rig.style.setProperty("--glow", ".7");
+    else rig.style.setProperty("--glow", ".4");
+    RKB_CONFIG.emotion = { current: emotion, previous: this.previous, intensity: this.intensity, timestamp: this.timestamp };
+    updateDebugHud();
+  },
+  snapshot() { return { current: this.current, previous: this.previous, intensity: this.intensity, timestamp: this.timestamp }; },
+  loadFrom(cfg) {
+    if (cfg && cfg.current) {
+      this.current = cfg.current; this.previous = cfg.previous || cfg.current;
+      this.intensity = cfg.intensity || 0; this.timestamp = cfg.timestamp || 0;
+      const rig = $("rkbRig");
+      if (rig) { rig.dataset.emotion = this.current; rig.dataset.intensity = this.intensity.toFixed(2); }
+    }
+  }
+};
+
+/* ==================== ACTING ENGINE ==================== */
+const ACTING_SCENES = {
+  greeting:   { emotion: "happy",     intensity: .7,  expression: "happy",    gesture: "wave",     hair: "happy",     speech: "Hey! 👋",                 voiceStyle: "friendly",  sound: "greeting" },
+  success:    { emotion: "excited",   intensity: .95, expression: "excited",  gesture: "thumbsup", hair: "happy",     speech: "BROOO! LET'S GO! 🔥",     voiceStyle: "energetic", sound: "success" },
+  error:      { emotion: "concerned", intensity: .7,  expression: "confused", gesture: "confused", hair: "idle",      speech: "Something went wrong.",   voiceStyle: "friendly",  sound: "error" },
+  thinking:   { emotion: "curious",   intensity: .5,  expression: "thinking", gesture: null,       hair: "processing",speech: "Hmm... give me a second.",voiceStyle: "assistant", sound: "thinking" },
+  sad:        { emotion: "sad",       intensity: .55, expression: "sad",      gesture: null,       hair: "idle",      speech: "That's okay bro.",        voiceStyle: "calm",      sound: null },
+  listening:  { emotion: "curious",   intensity: .4,  expression: "listening",gesture: null,       hair: "processing",speech: "I'm listening...",        voiceStyle: "assistant", sound: null },
+  speaking:   { emotion: "calm",      intensity: .5,  expression: "speaking", gesture: null,       hair: "happy",     speech: null,                      voiceStyle: null,        sound: null },
+  celebrating:{ emotion: "excited",   intensity: 1,   expression: "excited",  gesture: "celebrate",hair: "happy",     speech: "🎉🎉🎉",                  voiceStyle: "energetic", sound: "success" },
+  curious:    { emotion: "curious",   intensity: .5,  expression: "confused", gesture: null,       hair: "thinking",  speech: "Interesting...",          voiceStyle: "assistant", sound: null },
+  playful:    { emotion: "playful",   intensity: .7,  expression: "happy",    gesture: "thumbsup", hair: "happy",     speech: "Hehe 😜",                 voiceStyle: "friendly",  sound: null },
+  sleepy:     { emotion: "sleepy",    intensity: .4,  expression: "sleepy",   gesture: null,       hair: "sleeping",  speech: "Zzz...",                  voiceStyle: "calm",      sound: null },
+  goodbye:    { emotion: "happy",     intensity: .6,  expression: "happy",    gesture: "wave",     hair: "happy",     speech: "See you later! 👋",       voiceStyle: "friendly",  sound: "greeting" },
+  proud:      { emotion: "proud",     intensity: .85, expression: "proud",    gesture: "thumbsup", hair: "happy",     speech: "We did it! ✨",           voiceStyle: "friendly",  sound: "success" }
+};
+const actingEngine = {
+  current: "idle", _sceneTimer: null,
+  play(scene, opts = {}) {
+    if (!RKB_CONFIG.acting.enabled && !opts.force) return;
+    const s = ACTING_SCENES[scene]; if (!s) return;
+    this.current = scene;
+    if (s.emotion) emotionEngine.set(s.emotion, opts.intensity ?? s.intensity ?? .6);
+    if (s.expression) applyExpression(s.expression);
+    if (s.hair) setHairState(s.hair);
+    if (s.gesture) setTimeout(() => playGesture(s.gesture), opts.gestureDelay ?? 120);
+    if (s.speech) showSpeech(s.speech, opts.speechMs ?? 2400);
+    if (s.sound) playSound(s.sound);
+    if (s.speech && opts.speak !== false && RKB_CONFIG.sound.enabled) {
+      if (!opts.silentVoice) speak(s.speech, { style: s.voiceStyle });
+    }
+    updateDebugHud({ action: scene, gesture: s.gesture || "—" });
+    clearTimeout(this._sceneTimer);
+    const holdMs = opts.holdMs ?? (s.speech ? 2400 : 1600);
+    this._sceneTimer = setTimeout(() => {
+      if (this.current === scene) {
+        applyExpression("normal");
+        setHairState("idle");
+        updateDebugHud({ action: "idle" });
+      }
+    }, holdMs);
+  }
+};
+
+/* ==================== EMOTION CLASSIFIER ==================== */
+const EMOTION_RULES = [
+  { emotion: "excited",   intensity: .95, rx: /(let'?s go+|brooo+|awesome|amazing|fantastic|selected|got (the )?(job|offer|selected)|won|winner|🥳|🔥|🎉|🚀)/i },
+  { emotion: "happy",     intensity: .7,  rx: /(great|nice|good job|cool|love it|happy|glad|wonderful|perfect|thanks|thank you|nalla irukku|super|mast|semma|vera level)/i },
+  { emotion: "proud",     intensity: .8,  rx: /(i did it|we did it|achieved|built|created|shipped|nailed it)/i },
+  { emotion: "sad",       intensity: .55, rx: /(sad|bad news|unfortunately|sorry|miss|:|😢|😔|failed|fail)/i },
+  { emotion: "angry",     intensity: .8,  rx: /(angry|furious|hate|wtf|damn|grr|😡|🤬)/i },
+  { emotion: "confused",  intensity: .6,  rx: /(confus|don'?t understand|not sure|what\?|huh\?|enna problem|enna aachu|puriya)/i },
+  { emotion: "surprised", intensity: .8,  rx: /(wow|whoa|no way|really\?|omg|surprised|shocked|😮|😲)/i },
+  { emotion: "concerned", intensity: .6,  rx: /(tired|worried|afraid|scared|ill|sick|tension|stress|kastam)/i },
+  { emotion: "playful",   intensity: .7,  rx: /(bored|boring|let'?s play|fun|😂|🤣|joke|meme|sollu)/i },
+  { emotion: "curious",   intensity: .5,  rx: /(how|why|what|when|where|can you|enna|eppadi|epdi|yaen|yen)/i },
+  { emotion: "sleepy",    intensity: .4,  rx: /(sleep|sleepy|night|good night|gn|thoong)/i },
+  { emotion: "focused",   intensity: .6,  rx: /(focus|study|coding|code|debug|working|analyse|analyze|research)/i }
+];
+function classifyEmotion(text, fallback = "calm") {
+  const t = String(text || "");
+  for (const r of EMOTION_RULES) if (r.rx.test(t)) return { emotion: r.emotion, intensity: r.intensity };
+  return { emotion: fallback, intensity: .4 };
+}
+
+/* ==================== IDLE ENGINE ==================== */
+const IDLE_BEHAVIORS = [
+  { id: "look",     weight: 3, ms: 2200, cls: "idle-look" },
+  { id: "breathe",  weight: 4, ms: 3600, cls: "idle-breathe" },
+  { id: "tilt",     weight: 2, ms: 2400, cls: "idle-look" },
+  { id: "stretch",  weight: 1, ms: 1800, cls: "idle-stretch" },
+  { id: "yawn",     weight: 1, ms: 1800, cls: "idle-yawn" },
+  { id: "play",     weight: 1, ms: 1400, cls: "idle-play" }
+];
+const idleEngine = {
+  running: false, _t: null,
+  start() { if (this.running) return; this.running = true; this._schedule(); },
+  stop() { this.running = false; clearTimeout(this._t); },
+  _schedule() {
+    clearTimeout(this._t);
+    this._t = setTimeout(() => { this._tick(); if (this.running) this._schedule(); }, rand(9000, 22000));
+  },
+  _tick() {
+    if (!RKB_CONFIG.idle.enabled || document.hidden || RKB_CONFIG.reducedMotion) return;
+    if (chatBusy || voiceBusy) return;
+    const rig = $("rkbRig");
+    if (rig.classList.contains("g-wave")) return;
+    const b = weightedPick(IDLE_BEHAVIORS);
+    rig.classList.add(b.cls);
+    setTimeout(() => rig.classList.remove(b.cls), b.ms);
+  }
+};
+function weightedPick(items) {
+  const total = items.reduce((a, b) => a + b.weight, 0);
+  let r = Math.random() * total;
+  for (const it of items) { r -= it.weight; if (r <= 0) return it; }
+  return items[0];
+}
+
+/* ==================== REACTIVE PERSONALITY ==================== */
+const REACTIONS = [
+  { rx: /\b(hi|hello|hey|vanakkam|namaste|hola|konnichiwa)\b/i,       scene: "greeting",  reply: "Hey bro! 👋" },
+  { rx: /\b(bye|goodbye|see you|cya|gtg|poitu varen)\b/i,             scene: "goodbye",   reply: "See you soon! 👋" },
+  { rx: /\b(i'?m (so )?tired|exhausted|sleepy|need (a )?(break|rest))\b/i, scene: "sleepy",  reply: "Take a short break, bro. Hydrate 💧" },
+  { rx: /\b(i'?m bored|so boring|bore adikkuthu|nothing to do)\b/i,   scene: "playful",   reply: "Brooo, then let's do something 😂" },
+  { rx: /\b(i got selected|i got the job|i won|i passed|i did it)\b/i,scene: "celebrating", reply: "BROOO! LET'S GOOO! 🔥🔥🔥" },
+  { rx: /\b(sorry|my bad)\b/i,                                        scene: "concerned", reply: "No worries, bro." },
+  { rx: /\b(thanks|thank you|nandri)\b/i,                             scene: "happy",     reply: "Anytime! ✨" },
+  { rx: /\b(i'?m back|i'?m here|back again)\b/i,                      scene: "greeting",  reply: "You're back! 👋" }
+];
+function reactToUser(text) {
+  if (!RKB_CONFIG.idle.reactivePersonality) return null;
+  for (const r of REACTIONS) if (r.rx.test(text)) return r;
+  return null;
+}
+
+/* ==================== CONTEXT ENGINE ==================== */
+const contextEngine = {
+  state: structuredClone(RKB_CONFIG.context),
+  set(patch) {
+    this.state = { ...this.state, ...patch, updatedAt: Date.now() };
+    RKB_CONFIG.context = this.state;
+    saveConfig();
+    this._updatePanel();
+    updateDebugHud({ context: this.state.type });
+  },
+  clear() {
+    this.state = { type: "none", source: "", title: "", summary: "", lastText: "", confidence: 0, permission: "none", updatedAt: 0, autoFromChat: true };
+    RKB_CONFIG.context = this.state;
+    saveConfig();
+    this._updatePanel();
+    updateDebugHud({ context: "—" });
+  },
+  _updatePanel() {
+    const p = $("contextPanel"); if (!p) return;
+    const s = this.state;
+    const active = s.type !== "none";
+    p.classList.toggle("on", active || RKB_CONFIG.privacy.screenSharing || RKB_CONFIG.privacy.camera);
+    const a = $("ctxSource"); if (a) a.textContent = s.source || "—";
+    const b = $("ctxType"); if (b) b.textContent = s.type.toUpperCase();
+    const c = $("ctxAnalysis"); if (c) c.textContent = RKB_CONFIG.vision.configured ? "Vision Ready" : "Demo Mode";
+    const ago = s.updatedAt ? ((Date.now() - s.updatedAt) / 1000).toFixed(1) + "s ago" : "—";
+    const d = $("ctxUpdated"); if (d) d.textContent = ago;
+  },
+  pushTimeline(entry) {
+    if (!RKB_CONFIG.privacy.timelineOn) return;
+    RKB_CONFIG.timeline.items.unshift({ id: uid(), at: Date.now(), ...entry });
+    if (RKB_CONFIG.timeline.items.length > 80) RKB_CONFIG.timeline.items.length = 80;
+    saveConfig();
+    renderTimelineIfOpen();
+  }
+};
+function renderTimelineIfOpen() {
+  const wrap = $("tlList"); if (!wrap) return;
+  const items = RKB_CONFIG.timeline.items;
+  if (!items.length) { wrap.innerHTML = `<div class="tl-empty">No context captured yet.</div>`; return; }
+  wrap.innerHTML = items.map(i => {
+    const d = new Date(i.at);
+    const time = d.toTimeString().slice(0, 5);
+    return `<div class="tl-item"><span class="time">${time}</span><span class="src">${escapeHtml(i.source || "—")}</span><span class="type">${escapeHtml(i.type || "text")}</span><span class="sum" title="${escapeHtml(i.summary || "")}">${escapeHtml(i.summary || i.title || "")}</span></div>`;
+  }).join("");
+}
+function escapeHtml(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+/* ==================== SCREEN WATCHER ==================== */
+const screenWatcher = {
+  stream: null, video: null, canvas: null, ctx2d: null,
+  running: false, _timer: null, _lastHash: 0, _lastAnalyze: 0, _fps: 0,
+  async start(source = "tab") {
+    if (this.running) return;
+    if (!navigator.mediaDevices?.getDisplayMedia) { toast("Screen sharing isn't supported in this browser.", "err"); return; }
+    try {
+      const opts = { video: true, audio: false };
+      if (source === "tab") opts.video = { displaySurface: "browser" };
+      else if (source === "window") opts.video = { displaySurface: "window" };
+      else if (source === "screen") opts.video = { displaySurface: "monitor" };
+      const stream = await navigator.mediaDevices.getDisplayMedia(opts);
+      this.stream = stream;
+      this.video = document.createElement("video");
+      this.video.srcObject = stream;
+      this.video.muted = true;
+      await this.video.play();
+      this.canvas = document.createElement("canvas");
+      this.ctx2d = this.canvas.getContext("2d");
+      this.running = true;
+      RKB_CONFIG.privacy.screenSharing = true;
+      RKB_CONFIG.screenWatch.enabled = true;
+      saveConfig();
+      stream.getVideoTracks()[0].addEventListener("ended", () => this.stop(true));
+      this._tick();
+      contextEngine.set({ type: "screen", source: "Screen Share", title: "Live screen", permission: "granted", confidence: 0.4 });
+      toast("Screen sharing started", "ok");
+      achievementEngine.bump("screens");
+    } catch (e) { toast("Screen sharing was not allowed. You can enable it and try again.", "err"); this.running = false; }
+  },
+  stop(silent) {
+    this.running = false;
+    clearTimeout(this._timer);
+    if (this.stream) this.stream.getTracks().forEach(t => t.stop());
+    this.stream = null;
+    RKB_CONFIG.privacy.screenSharing = false;
+    RKB_CONFIG.screenWatch.enabled = false;
+    saveConfig();
+    if (!silent) toast("Screen sharing stopped", "ok");
+    contextEngine.clear();
+  },
+  pause() { if (!this.running) return; this.running = false; clearTimeout(this._timer); toast("Screen watching paused", "ok"); },
+  resume() { if (this.running || !this.stream) return; this.running = true; this._tick(); toast("Screen watching resumed", "ok"); },
+  _intervalMs() { const s = RKB_CONFIG.screenWatch.sampling; return s === "eco" ? 5000 : s === "fast" ? 1500 : 3000; },
+  _tick() { clearTimeout(this._timer); if (!this.running) return; this._timer = setTimeout(() => { this._sample(); this._tick(); }, this._intervalMs()); },
+  _sample() {
+    if (!this.running || !this.video || !this.ctx2d) return;
+    const w = 320, h = 180;
+    this.canvas.width = w; this.canvas.height = h;
+    try { this.ctx2d.drawImage(this.video, 0, 0, w, h); } catch { return; }
+    this._fps = 1000 / this._intervalMs();
+    updateDebugHud({ vision: "sampling" });
+    const data = this.ctx2d.getImageData(0, 0, w, h).data;
+    let sum = 0, buckets = new Array(16).fill(0);
+    const step = 8;
+    for (let i = 0; i < data.length; i += 4 * step) {
+      const l = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+      sum += l; buckets[Math.floor(l / 16)]++;
+    }
+    const avg = sum / (data.length / (4 * step));
+    const hash = Math.round(avg * 1000) ^ buckets[0];
+    const diff = Math.abs(hash - this._lastHash);
+    const threshold = RKB_CONFIG.performance === "high" ? 30 : RKB_CONFIG.performance === "low" ? 120 : 60;
+    const now = Date.now();
+    if (diff > threshold && now - this._lastAnalyze > RKB_CONFIG.screenWatch.cooldown) {
+      this._lastHash = hash; this._lastAnalyze = now;
+      this._analyze();
+    } else updateDebugHud({ vision: "idle" });
+  },
+  async _analyze() {
+    updateDebugHud({ vision: "analyzing" });
+    const dataUrl = this.canvas.toDataURL("image/jpeg", 0.6);
+    const source = RKB_CONFIG.screenWatch.source === "tab" ? "Browser Tab" : RKB_CONFIG.screenWatch.source === "window" ? "Window" : "Screen";
+    contextEngine.set({ type: "screen", source, title: "Live screen", lastText: "", permission: "granted", confidence: 0.5, summary: "Significant change detected" });
+    contextEngine.pushTimeline({ source, type: "screen", summary: "Frame change detected" });
+    if (RKB_CONFIG.vision.configured) {
+      try {
+        const res = await fetch("/api/vision", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ provider: RKB_CONFIG.vision.provider, model: RKB_CONFIG.vision.model, image: dataUrl })
+        });
+        const j = await res.json();
+        if (j && j.ok && j.analysis) {
+          contextEngine.set({ summary: j.analysis });
+          if (RKB_CONFIG.acting.enabled) actingEngine.play("curious", { force: true, silentVoice: true });
+        }
+      } catch {}
+    }
+    updateDebugHud({ vision: "idle" });
+  }
+};
+
+/* ==================== FILE INTELLIGENCE ==================== */
+const SUPPORTED_EXT = ["pdf","txt","docx","csv","png","jpg","jpeg","js","html","css","json","py","java","cpp","md","ts","tsx","jsx"];
+function extOf(name) { const i = name.lastIndexOf("."); return i >= 0 ? name.slice(i + 1).toLowerCase() : ""; }
+function fmtBytes(b) { if (b < 1024) return b + " B"; if (b < 1048576) return (b / 1024).toFixed(1) + " KB"; return (b / 1048576).toFixed(2) + " MB"; }
+async function analyzeFile(file) {
+  const ext = extOf(file.name);
+  const entry = { id: uid(), name: file.name, type: ext, size: file.size, text: "", metadata: {}, status: "ready", error: "" };
+  try {
+    if (["txt","md","js","ts","jsx","tsx","html","css","json","py","java","cpp","csv"].includes(ext)) {
+      entry.text = (await file.text()).slice(0, 200000);
+      if (ext === "csv") entry.metadata.rows = entry.text.split(/\r?\n/).length;
+      if (ext === "html") entry.metadata.validHtml = true;
+    } else if (["png","jpg","jpeg"].includes(ext)) {
+      entry.metadata.preview = URL.createObjectURL(file);
+      entry.status = "ready-image";
+    } else if (ext === "pdf") { entry.status = "pdf-unparsed"; entry.metadata.hint = "Send to backend to extract text."; }
+    else if (ext === "docx") { entry.status = "docx-unparsed"; entry.metadata.hint = "DOCX text extraction not available in-browser here."; }
+    else { entry.status = "unsupported"; entry.error = "Unsupported file type"; }
+  } catch (e) { entry.status = "error"; entry.error = e.message || String(e); }
+  return entry;
+}
+
+/* ==================== CAMERA ENGINE ==================== */
+const cameraEngine = {
+  stream: null, video: null, active: false,
+  async start(videoEl, mode = "textbook") {
+    if (!navigator.mediaDevices?.getUserMedia) { toast("Camera not supported in this browser.", "err"); return false; }
+    if (this.active) return true;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      this.stream = stream;
+      this.video = videoEl;
+      videoEl.srcObject = stream;
+      await videoEl.play();
+      this.active = true;
+      RKB_CONFIG.privacy.camera = true; saveConfig();
+      contextEngine.set({ type: "camera", source: "Camera", title: "Camera — " + mode, permission: "granted", confidence: 0.5 });
+      contextEngine.pushTimeline({ source: "Camera", type: "camera", summary: "Camera session started" });
+      toast("Camera started", "ok");
+      achievementEngine.bump("cameras");
+      return true;
+    } catch (e) { toast("Camera permission denied or unavailable.", "err"); return false; }
+  },
+  stop() {
+    if (!this.active) return;
+    if (this.stream) this.stream.getTracks().forEach(t => t.stop());
+    this.stream = null; this.active = false;
+    RKB_CONFIG.privacy.camera = false; saveConfig();
+    if (this.video) { try { this.video.srcObject = null; } catch {} }
+    toast("Camera stopped", "ok");
+  },
+  async snap() {
+    if (!this.video) return null;
+    const c = document.createElement("canvas");
+    c.width = this.video.videoWidth || 640; c.height = this.video.videoHeight || 360;
+    c.getContext("2d").drawImage(this.video, 0, 0, c.width, c.height);
+    return c.toDataURL("image/jpeg", 0.7);
+  }
+};
+
+/* ==================== MEMORY ==================== */
+const memoryEngine = {
+  enabled() { return RKB_CONFIG.memory.enabled && !RKB_CONFIG.memory.temporary; },
+  add(cat, text) {
+    if (!this.enabled()) return;
+    RKB_CONFIG.memory.items.unshift({ id: uid(), cat, text: String(text).slice(0, 400), createdAt: Date.now() });
+    if (RKB_CONFIG.memory.items.length > 200) RKB_CONFIG.memory.items.length = 200;
+    saveConfig(); updateDebugHud(); renderMemoryIfOpen();
+  },
+  remove(id) { RKB_CONFIG.memory.items = RKB_CONFIG.memory.items.filter(i => i.id !== id); saveConfig(); renderMemoryIfOpen(); updateDebugHud(); },
+  clear(cat) {
+    if (!cat) RKB_CONFIG.memory.items = [];
+    else RKB_CONFIG.memory.items = RKB_CONFIG.memory.items.filter(i => i.cat !== cat);
+    saveConfig(); renderMemoryIfOpen(); updateDebugHud();
+  },
+  count() { return RKB_CONFIG.memory.items.length; },
+  detectAndRemember(text) {
+    const t = String(text || "");
+    const m1 = t.match(/\b(call me|i'?m called|my name is|ennoda peru)\s+([A-Za-z0-9_\- ]{2,30})/i);
+    if (m1) { RKB_CONFIG.memory.prefs.nickname = m1[2].trim(); this.add("Preferences", `Nickname: ${m1[2].trim()}`); }
+    if (/\buse tamil\b/i.test(t)) { RKB_CONFIG.language.mode = "tamil"; this.add("Language", "Use Tamil"); }
+    if (/\buse tanglish\b/i.test(t)) { RKB_CONFIG.language.mode = "tanglish"; this.add("Language", "Use Tanglish"); }
+    if (/\buse hindi\b/i.test(t)) { RKB_CONFIG.language.mode = "hindi"; this.add("Language", "Use Hindi"); }
+    if (/\bkeep (answers|responses) short\b/i.test(t)) { RKB_CONFIG.personality.length = 0.25; this.add("Preferences", "Keep answers short"); }
+    if (/\bspeak (in )?english\b/i.test(t)) { RKB_CONFIG.language.mode = "english"; this.add("Language", "Use English"); }
+    saveConfig();
+  }
+};
+function renderMemoryIfOpen() {
+  const wrap = $("memList"); if (!wrap) return;
+  const items = RKB_CONFIG.memory.items;
+  if (!items.length) { wrap.innerHTML = `<div class="tl-empty">No memories yet.</div>`; return; }
+  wrap.innerHTML = items.slice(0, 60).map(i =>
+    `<div class="mem-item"><span class="cat">${escapeHtml(i.cat)}</span><span class="txt" title="${escapeHtml(i.text)}">${escapeHtml(i.text)}</span><span class="x" data-id="${i.id}">✕</span></div>`
+  ).join("");
+  wrap.querySelectorAll(".x").forEach(x => x.addEventListener("click", () => memoryEngine.remove(x.dataset.id)));
+}
+
+/* ==================== MODE CENTER ==================== */
+const MODES = {
+  universal:  { icon: "🌐", label: "Universal" },
+  study:      { icon: "📚", label: "Study" },
+  coding:     { icon: "💻", label: "Coding" },
+  movie:      { icon: "🎬", label: "Movie" },
+  document:   { icon: "📄", label: "Document" },
+  vision:     { icon: "🖼", label: "Vision" },
+  panimalar:  { icon: "🎓", label: "Panimalar" },
+  research:   { icon: "🧠", label: "Research" },
+  gaming:     { icon: "🎮", label: "Gaming" }
+};
+function applyMode(mode) {
+  if (!MODES[mode]) mode = "universal";
+  RKB_CONFIG.mode = mode;
+  const modesTried = new Set([...(RKB_CONFIG.achievements.__modes || []), mode]);
+  RKB_CONFIG.achievements.__modes = [...modesTried];
+  RKB_CONFIG.achievements.progress.modesTried = modesTried.size;
+  saveConfig();
+  document.querySelectorAll(".mode-btn").forEach(b => b.classList.toggle("on", b.dataset.mode === mode));
+  const hm = $("hudMode"); if (hm) hm.textContent = MODES[mode].label;
+  updateDebugHud({ mode });
+  toast(`Mode: ${MODES[mode].label}`, "ok");
+  if (RKB_CONFIG.acting.enabled) actingEngine.play(mode === "movie" ? "playful" : mode === "study" ? "curious" : "greeting", { silentVoice: true, holdMs: 1600 });
+  memoryEngine.add("Projects", `Switched mode → ${MODES[mode].label}`);
+}
+
+/* ==================== LANGUAGES / PERSONALITY / THEMES ==================== */
+const LANGUAGES = [
+  { code: "en", label: "English" }, { code: "ta", label: "Tamil" }, { code: "hi", label: "Hindi" },
+  { code: "te", label: "Telugu" }, { code: "ml", label: "Malayalam" }, { code: "kn", label: "Kannada" },
+  { code: "fr", label: "French" }, { code: "de", label: "German" }, { code: "es", label: "Spanish" },
+  { code: "ja", label: "Japanese" }, { code: "ko", label: "Korean" }, { code: "zh", label: "Chinese" }
+];
+const GREETINGS = {
+  en: "Hey bro! I'm RKB. Ready when you are. 😎",
+  ta: "வணக்கம்! நான் RKB. தயார்! 😎",
+  hi: "नमस्ते! मैं RKB हूँ। तैयार हूँ! 😎",
+  te: "హాయ్! నేను RKB. సిద్ధం! 😎",
+  ml: "ഹായ്! ഞാൻ RKB. തയ്യാർ! 😎",
+  kn: "ಹಾಯ್! ನಾನು RKB. ಸಿದ್ಧ! 😎",
+  fr: "Salut! Je suis RKB. Prêt quand tu l'es. 😎",
+  de: "Hallo! Ich bin RKB. Bereit wenn du es bist. 😎",
+  es: "¡Hola! Soy RKB. Listo cuando tú lo estés. 😎",
+  ja: "やあ！RKB です。いつでもどうぞ。😎",
+  ko: "안녕! 나는 RKB야. 준비됐어. 😎",
+  zh: "嘿！我是 RKB。随时准备好。😎"
+};
+const PERSONALITIES = {
+  professional: { bias: { formality: .85, humor: .15, energy: .5, technicality: .7, length: .4, creativity: .4, emotionIntensity: .4 } },
+  friendly:     { bias: { formality: .4, humor: .6, energy: .65, technicality: .5, length: .5, creativity: .6, emotionIntensity: .7 } },
+  bro:          { bias: { formality: .1, humor: .8, energy: .85, technicality: .5, length: .4, creativity: .7, emotionIntensity: .9 } },
+  teacher:      { bias: { formality: .7, humor: .3, energy: .5, technicality: .7, length: .75, creativity: .5, emotionIntensity: .5 } },
+  "gen-z":      { bias: { formality: .05, humor: .9, energy: .9, technicality: .4, length: .35, creativity: .8, emotionIntensity: .8 } },
+  motivator:    { bias: { formality: .4, humor: .55, energy: .95, technicality: .4, length: .5, creativity: .7, emotionIntensity: .95 } },
+  sarcastic:    { bias: { formality: .3, humor: .95, energy: .6, technicality: .5, length: .5, creativity: .8, emotionIntensity: .6 } },
+  gaming:       { bias: { formality: .15, humor: .8, energy: .95, technicality: .5, length: .4, creativity: .8, emotionIntensity: .9 } },
+  anime:        { bias: { formality: .3, humor: .7, energy: .9, technicality: .4, length: .5, creativity: .85, emotionIntensity: .95 } },
+  researcher:   { bias: { formality: .8, humor: .25, energy: .5, technicality: .9, length: .8, creativity: .6, emotionIntensity: .4 } },
+  coder:        { bias: { formality: .5, humor: .4, energy: .55, technicality: .9, length: .5, creativity: .5, emotionIntensity: .5 } },
+  moviebuddy:   { bias: { formality: .2, humor: .85, energy: .75, technicality: .3, length: .4, creativity: .85, emotionIntensity: .9 } },
+  studybuddy:   { bias: { formality: .5, humor: .5, energy: .65, technicality: .6, length: .6, creativity: .55, emotionIntensity: .7 } }
+};
+function applyPersonality(preset) {
+  const p = PERSONALITIES[preset]; if (!p) return;
+  RKB_CONFIG.personality.preset = preset;
+  Object.assign(RKB_CONFIG.personality, p.bias);
+  commit("personality.preset");
+  toast("Personality: " + preset, "ok");
+  memoryEngine.add("Personality", `Personality → ${preset}`);
+}
+const THEMES = {
+  "cyber-cyan":   { accent: "#45e9ff", accent2: "#b36cff", bg0: "#050914", bg1: "#0a1422" },
+  "neon-purple":  { accent: "#b36cff", accent2: "#ff6bd8", bg0: "#0b0616", bg1: "#150a26" },
+  "matrix-green": { accent: "#63ffbd", accent2: "#45e9ff", bg0: "#030c08", bg1: "#061a10" },
+  "red-core":     { accent: "#ff4d69", accent2: "#ffd15c", bg0: "#0d0407", bg1: "#1a0810" },
+  "midnight":     { accent: "#7a8cff", accent2: "#45e9ff", bg0: "#05070f", bg1: "#0a0e1e" },
+  "glass":        { accent: "#a9ecff", accent2: "#cdb6ff", bg0: "#0a1220", bg1: "#0f1a2e" },
+  "hologram":     { accent: "#57f7ff", accent2: "#a78bfa", bg0: "#020a14", bg1: "#061625" },
+  "minimal":      { accent: "#d8e6ee", accent2: "#9fb4c2", bg0: "#0b0e12", bg1: "#121820" },
+  "amoled":       { accent: "#45e9ff", accent2: "#b36cff", bg0: "#000000", bg1: "#000000" },
+  "rgb":          { accent: "#45e9ff", accent2: "#ff4d69", bg0: "#050914", bg1: "#0a1422" }
+};
+function applyThemePreset(name) {
+  const t = THEMES[name]; if (!t) return;
+  RKB_CONFIG.theme.preset = name;
+  Object.assign(RKB_CONFIG.theme, t);
+  const known = new Set([...(RKB_CONFIG.achievements.__themes || []), name]);
+  RKB_CONFIG.achievements.__themes = [...known];
+  RKB_CONFIG.achievements.progress.themesTried = known.size;
+  commit("theme.preset");
+}
+function applyTheme() {
+  const t = RKB_CONFIG.theme;
+  document.body.dataset.theme = t.preset;
+  document.body.dataset.perf = RKB_CONFIG.performance;
+  document.body.dataset.reduced = RKB_CONFIG.reducedMotion ? "1" : "0";
+  const r = document.documentElement.style;
+  r.setProperty("--accent", t.accent);
+  r.setProperty("--accent-2", t.accent2);
+  r.setProperty("--bg-0", t.bg0);
+  r.setProperty("--bg-1", t.bg1);
+  r.setProperty("--glass", t.glass);
+  r.setProperty("--radius", t.radius + "px");
+  r.setProperty("--blur", "0px");
+  if (t.preset === "rgb") {
+    let hh = 0;
+    clearInterval(applyTheme._rgb);
+    applyTheme._rgb = setInterval(() => {
+      hh = (hh + 2) % 360;
+      r.setProperty("--accent", `hsl(${hh},90%,65%)`);
+      r.setProperty("--accent-2", `hsl(${(hh + 60) % 360},90%,65%)`);
+      if (bg) bg.reseed();
+    }, 200);
+  } else clearInterval(applyTheme._rgb);
+}
+
+/* ==================== VOICE ==================== */
+function pickVoice(style, voices) {
+  const filters = {
+    female: v => /female|zira|samantha|karen|moira|tessa|fiona/i.test(v.name),
+    male: v => /male|david|daniel|alex|fred|google uk english male/i.test(v.name),
+    robotic: v => /robot|zarvox|trinoids/i.test(v.name),
+    anime: v => /kyoko|otoya|google 日本語/i.test(v.name),
+    deep: v => /david|fred|daniel/i.test(v.name),
+    energetic: v => /samantha|zira/i.test(v.name),
+    calm: v => /karen|moira/i.test(v.name),
+    assistant: v => /google|microsoft/i.test(v.name),
+    professional: v => /david|daniel/i.test(v.name),
+    friendly: v => /zira|samantha/i.test(v.name)
+  };
+  const f = filters[style]; if (f) { const m = voices.find(f); if (m) return m; }
+  return voices.find(v => v.lang.startsWith("en")) || voices[0];
+}
+function speak(text, opts = {}) {
+  if (!RKB_CONFIG.sound.enabled) return;
+  if (!("speechSynthesis" in window)) return;
+  try { speechSynthesis.cancel(); } catch {}
+  const u = new SpeechSynthesisUtterance(text);
+  const style = opts.style || RKB_CONFIG.voice.style;
+  u.rate  = RKB_CONFIG.voice.speed * (style === "energetic" ? 1.15 : style === "calm" ? .85 : 1);
+  u.pitch = RKB_CONFIG.voice.pitch * (style === "deep" ? .7 : style === "anime" ? 1.25 : 1);
+  u.volume = RKB_CONFIG.voice.volume * RKB_CONFIG.sound.volume;
+  u.lang = RKB_CONFIG.language.code === "en" ? "en-US" : RKB_CONFIG.language.code;
+  const vs = speechSynthesis.getVoices();
+  if (vs.length) { const pick = pickVoice(style, vs); if (pick) u.voice = pick; }
+  u.onstart = () => { applyExpression("speaking"); setHairState("happy"); updateDebugHud({ state: "speaking" }); };
+  u.onend = () => { applyExpression("normal"); setHairState("idle"); updateDebugHud({ state: "idle" }); };
+  speechSynthesis.speak(u);
+}
+function speakGreeting() {
+  const g = GREETINGS[RKB_CONFIG.language.code] || GREETINGS.en;
+  speak(g, { style: "friendly" });
+  showSpeech(g, 2800);
+}
+
+/* ==================== SOUND ==================== */
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch {} }
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, dur, type = "sine", gain = .06, detune = 0) {
+  if (!RKB_CONFIG.sound.enabled) return;
+  const ctx = ensureAudio(); if (!ctx) return;
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type; o.frequency.value = freq; o.detune.value = detune;
+  g.gain.value = 0; o.connect(g).connect(ctx.destination);
+  const t = ctx.currentTime;
+  g.gain.linearRampToValueAtTime(gain * RKB_CONFIG.sound.volume, t + .015);
+  g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.start(t); o.stop(t + dur + .02);
+}
+function playSound(kind) {
+  if (!RKB_CONFIG.sound.enabled) return;
+  switch (kind) {
+    case "startup":     tone(420,.18,"triangle"); setTimeout(()=>tone(660,.22,"triangle"),90); setTimeout(()=>tone(880,.3,"triangle"),220); break;
+    case "thinking":    tone(600,.12,"square",.04); setTimeout(()=>tone(720,.12,"square",.04),100); break;
+    case "success":     tone(660,.12,"sine"); setTimeout(()=>tone(990,.2,"sine"),90); break;
+    case "notify":      tone(880,.06,"sine",.05); break;
+    case "notification":tone(740,.08,"sine",.05); setTimeout(()=>tone(980,.1,"sine",.05),70); break;
+    case "error":       tone(220,.18,"sawtooth",.05); setTimeout(()=>tone(180,.22,"sawtooth",.05),80); break;
+    case "greeting":    tone(520,.14,"triangle"); setTimeout(()=>tone(780,.18,"triangle"),100); break;
+    case "achievement": tone(660,.1,"sine"); setTimeout(()=>tone(880,.1,"sine"),80); setTimeout(()=>tone(1180,.18,"sine"),180); break;
+    case "levelup":     tone(440,.1,"triangle"); setTimeout(()=>tone(660,.1,"triangle"),90); setTimeout(()=>tone(880,.1,"triangle"),180); setTimeout(()=>tone(1320,.28,"triangle"),280); break;
+  }
+}
+
+/* ==================== DNA v4 ==================== */
+function dnaObject() {
+  return {
+    product: "RKB", version: 4, exportedAt: new Date().toISOString(),
+    character: RKB_CONFIG.character, eyes: RKB_CONFIG.eyes, hair: RKB_CONFIG.hair,
+    body: RKB_CONFIG.body, clothing: RKB_CONFIG.clothing, accessories: RKB_CONFIG.accessories,
+    voice: RKB_CONFIG.voice, personality: RKB_CONFIG.personality, language: RKB_CONFIG.language,
+    theme: RKB_CONFIG.theme, background: RKB_CONFIG.background, sound: RKB_CONFIG.sound,
+    behavior: RKB_CONFIG.behavior, performance: RKB_CONFIG.performance, reducedMotion: RKB_CONFIG.reducedMotion,
+    acting: RKB_CONFIG.acting, emotion: RKB_CONFIG.emotion, idle: RKB_CONFIG.idle,
+    achievements: RKB_CONFIG.achievements, xp: RKB_CONFIG.xp, debugHud: RKB_CONFIG.debugHud,
+    mode: RKB_CONFIG.mode,
+    memory: { enabled: RKB_CONFIG.memory.enabled, prefs: RKB_CONFIG.memory.prefs, items: RKB_CONFIG.memory.items.slice(0, 40) },
+    privacy: RKB_CONFIG.privacy, context: RKB_CONFIG.context, screenWatch: RKB_CONFIG.screenWatch,
+    vision: RKB_CONFIG.vision, timeline: RKB_CONFIG.timeline, stage: RKB_CONFIG.stage,
+    panimalar: RKB_CONFIG.panimalar, lab: RKB_CONFIG.lab, desktop: RKB_CONFIG.desktop
+  };
+}
+function exportDNA() {
+  const dna = dnaObject();
+  const blob = new Blob([JSON.stringify(dna, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = "rkb-dna.json";
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  toast("DNA exported", "ok"); achievementEngine.bump("exports");
+}
+function copyDNA() {
+  const text = JSON.stringify(dnaObject(), null, 2);
+  navigator.clipboard?.writeText(text).then(
+    () => { toast("DNA copied", "ok"); achievementEngine.bump("exports"); },
+    () => { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); ta.remove(); toast("DNA copied", "ok"); achievementEngine.bump("exports"); }
+  );
+}
+function importDNA() {
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "application/json,.json";
+  inp.onchange = async () => {
+    const f = inp.files?.[0]; if (!f) return;
+    try {
+      const txt = await f.text(); const parsed = JSON.parse(txt);
+      if (!parsed || typeof parsed !== "object") throw new Error("Not an object");
+      if (parsed.product && parsed.product !== "RKB") throw new Error("Not RKB DNA");
+      RKB_CONFIG = deepMerge(DEFAULTS, parsed);
+      saveConfig();
+      applyTheme(); renderCharacter(); renderInspector(currentSection);
+      emotionEngine.loadFrom(RKB_CONFIG.emotion);
+      updateLevelUI();
+      if (IS_DESKTOP) desktopBridge.applyDesktopConfig();
+      toast("DNA imported", "ok"); playSound("success"); achievementEngine.bump("imports");
+    } catch (e) { toast("Invalid DNA file: " + e.message, "err"); playSound("error"); }
+  };
+  inp.click();
+}
+
+/* ==================== PRESETS ==================== */
+const PRESETS = {
+  classic:    { name: "RKB Classic",   apply: c => { c.character.headShape="round"; c.character.material="ceramic"; c.character.antenna="v"; c.eyes.style="cyber"; c.eyes.color="#45e9ff"; c.hair.style="cyber"; c.hair.color="#1a1030"; c.hair.color2="#45e9ff"; c.body.preset="cyber-android"; c.clothing.outfit="cyber"; c.clothing.primary="#e9eff6"; c.clothing.secondary="#0a1220"; c.clothing.accent="#45e9ff"; c.accessories=["headphones"]; c.personality.preset="friendly"; c.theme.preset="cyber-cyan"; } },
+  cyber:      { name: "RKB Cyber",     apply: c => { c.character.headShape="square"; c.character.material="titanium"; c.eyes.style="scanner"; c.eyes.pupil="scanner"; c.eyes.color="#45e9ff"; c.hair.style="cyber"; c.hair.color="#45e9ff"; c.hair.color2="#b36cff"; c.body.preset="cyber-android"; c.clothing.outfit="cyber"; c.accessories=["headphones","cyber-glasses"]; c.personality.preset="professional"; c.theme.preset="cyber-cyan"; } },
+  student:    { name: "RKB Student",   apply: c => { c.character.material="ceramic"; c.eyes.style="human"; c.eyes.color="#a9ecff"; c.hair.style="anime"; c.hair.color="#5a3a2a"; c.hair.color2="#8a5a3a"; c.clothing.outfit="student"; c.clothing.accent="#ffd15c"; c.accessories=["books","backpack","id-card"]; c.personality.preset="teacher"; c.theme.preset="midnight"; } },
+  coder:      { name: "RKB Coder",     apply: c => { c.character.material="matte"; c.eyes.style="digital"; c.eyes.color="#63ffbd"; c.hair.style="swept"; c.clothing.outfit="developer"; c.accessories=["laptop","cyber-glasses","watch"]; c.personality.preset="coder"; c.theme.preset="matrix-green"; } },
+  gamer:      { name: "RKB Gamer",     apply: c => { c.character.material="carbon"; c.eyes.style="led"; c.eyes.color="#ff4d69"; c.hair.style="rgb"; c.hair.glow=.9; c.body.preset="guardian"; c.clothing.outfit="gamer"; c.accessories=["headphones","controller","watch"]; c.personality.preset="gaming"; c.theme.preset="neon-purple"; } },
+  movie:      { name: "RKB Movie",     apply: c => { c.character.material="chrome"; c.eyes.style="holo"; c.eyes.color="#ffd15c"; c.hair.style="swept"; c.body.preset="hologram"; c.clothing.outfit="casual"; c.accessories=["sunglasses"]; c.personality.preset="moviebuddy"; c.theme.preset="red-core"; } },
+  study:      { name: "RKB Study",     apply: c => { c.character.material="ceramic"; c.eyes.style="human"; c.hair.style="gravity"; c.clothing.outfit="researcher"; c.accessories=["books","tablet","id-card"]; c.personality.preset="studybuddy"; c.theme.preset="midnight"; } },
+  researcher: { name: "RKB Researcher",apply: c => { c.character.material="carbon"; c.eyes.style="scanner"; c.hair.style="neural"; c.clothing.outfit="researcher"; c.accessories=["cyber-glasses","tablet"]; c.personality.preset="researcher"; c.theme.preset="midnight"; } },
+  panimalar:  { name: "RKB Panimalar", apply: c => { c.character.material="titanium"; c.eyes.style="holo"; c.eyes.color="#ffd15c"; c.hair.style="royal"; c.body.preset="guardian"; c.clothing.outfit="royal"; c.accessories=["grad-cap","books","id-card","trophy"]; c.personality.preset="teacher"; c.theme.preset="cyber-cyan"; c.mode="panimalar"; } },
+  night:      { name: "RKB Night",     apply: c => { c.character.material="matte"; c.eyes.style="orb"; c.eyes.color="#b36cff"; c.hair.style="flow"; c.hair.color="#2a1a3a"; c.hair.color2="#b36cff"; c.clothing.outfit="cyber"; c.accessories=[]; c.personality.preset="friendly"; c.theme.preset="neon-purple"; } },
+  hologram:   { name: "RKB Hologram",  apply: c => { c.character.material="holographic"; c.eyes.style="holo"; c.eyes.color="#57f7ff"; c.hair.style="holographic"; c.body.preset="hologram"; c.clothing.outfit="cyber"; c.accessories=["visor","energy-ring"]; c.theme.preset="hologram"; } },
+  guardian:   { name: "RKB Guardian",  apply: c => { c.character.material="titanium"; c.character.ears="fin"; c.eyes.style="led"; c.eyes.color="#ff4d69"; c.hair.style="military"; c.body.preset="guardian"; c.clothing.outfit="military"; c.accessories=["shield","visor"]; c.personality.preset="professional"; c.theme.preset="red-core"; } },
+  stealth:    { name: "RKB Stealth",   apply: c => { c.character.material="carbon"; c.eyes.style="scanner"; c.hair.style="undercut"; c.clothing.outfit="stealth"; c.accessories=["visor"]; c.theme.preset="matrix-green"; } }
+};
+function applyPreset(key) {
+  const p = PRESETS[key]; if (!p) return;
+  p.apply(RKB_CONFIG); saveConfig(); applyTheme(); renderCharacter();
+  if (RKB_CONFIG.mode) applyMode(RKB_CONFIG.mode);
+  toast(p.name + " loaded", "ok"); playSound("success");
+  achievementEngine.bump("presets");
+}
+
+/* ==================== ACHIEVEMENTS / XP ==================== */
+const ACHIEVEMENTS = [
+  { id: "first_chat",     title: "First Conversation",   desc: "Talked to RKB for the first time",   icon: "💬" },
+  { id: "first_voice",    title: "Voice Pioneer",        desc: "Used voice interaction",             icon: "🎤" },
+  { id: "first_custom",   title: "Character Creator",    desc: "Customized RKB",                     icon: "🎨" },
+  { id: "first_export",   title: "DNA Keeper",           desc: "Exported or copied RKB DNA",         icon: "🧬" },
+  { id: "first_import",   title: "DNA Restorer",         desc: "Imported an RKB DNA file",           icon: "📥" },
+  { id: "first_preset",   title: "Preset Explorer",      desc: "Loaded an RKB preset",               icon: "🏆" },
+  { id: "first_scene",    title: "Scene Director",       desc: "Played an acting scene",             icon: "🎬" },
+  { id: "first_gesture",  title: "Gesture Master",       desc: "Triggered a gesture",                icon: "🖐" },
+  { id: "first_screen",   title: "Screen Watcher",       desc: "Started screen sharing",             icon: "👁‍🗨" },
+  { id: "first_camera",   title: "Camera Pioneer",       desc: "Started camera",                     icon: "📷" },
+  { id: "first_file",     title: "File Analyst",         desc: "Analyzed a file",                    icon: "📁" },
+  { id: "first_desktop",  title: "Companion Mode",       desc: "Ran RKB on the desktop",             icon: "🖥" },
+  { id: "first_action",   title: "Action Approved",      desc: "Approved an RKB action",             icon: "⚡" },
+  { id: "chat_10",        title: "Chatterbox",           desc: "Sent 10 messages",                   icon: "🗣" },
+  { id: "chat_100",       title: "Centurion",            desc: "Sent 100 messages",                  icon: "💯" },
+  { id: "explore_themes", title: "Theme Explorer",       desc: "Tried 5 different themes",           icon: "🌈" },
+  { id: "explore_modes",  title: "Mode Explorer",        desc: "Tried 4 RKB modes",                  icon: "🎛" },
+  { id: "level_5",        title: "AI Explorer Lv.5",     desc: "Reached level 5",                    icon: "🚀" }
+];
+const achievementEngine = {
+  unlocked() { return RKB_CONFIG.achievements.unlocked || {}; },
+  progress() { return RKB_CONFIG.achievements.progress || {}; },
+  has(id) { return !!this.unlocked()[id]; },
+  bump(key, by = 1) {
+    const p = { ...this.progress() };
+    p[key] = (p[key] || 0) + by;
+    RKB_CONFIG.achievements.progress = p;
+    saveConfig(); this.check();
+  },
+  unlock(id) {
+    if (this.has(id)) return false;
+    const a = ACHIEVEMENTS.find(x => x.id === id); if (!a) return false;
+    const u = { ...this.unlocked() };
+    u[id] = { date: Date.now(), title: a.title, icon: a.icon };
+    RKB_CONFIG.achievements.unlocked = u;
+    saveConfig();
+    toast(`🏆 ${a.title} unlocked!`, "ach", 4200);
+    playSound("achievement");
+    this.awardXP(120, "ach_" + id);
+    return true;
+  },
+  check() {
+    const p = this.progress();
+    if ((p.chats || 0) >= 1)   this.unlock("first_chat");
+    if ((p.voices || 0) >= 1)  this.unlock("first_voice");
+    if ((p.custom || 0) >= 1)  this.unlock("first_custom");
+    if ((p.exports || 0) >= 1) this.unlock("first_export");
+    if ((p.imports || 0) >= 1) this.unlock("first_import");
+    if ((p.presets || 0) >= 1) this.unlock("first_preset");
+    if ((p.scenes || 0) >= 1)  this.unlock("first_scene");
+    if ((p.gestures || 0) >= 1) this.unlock("first_gesture");
+    if ((p.screens || 0) >= 1) this.unlock("first_screen");
+    if ((p.cameras || 0) >= 1) this.unlock("first_camera");
+    if ((p.files || 0) >= 1)   this.unlock("first_file");
+    if ((p.desktop || 0) >= 1) this.unlock("first_desktop");
+    if ((p.actions || 0) >= 1) this.unlock("first_action");
+    if ((p.chats || 0) >= 10)  this.unlock("chat_10");
+    if ((p.chats || 0) >= 100) this.unlock("chat_100");
+    if ((p.themesTried || 0) >= 5) this.unlock("explore_themes");
+    if ((p.modesTried || 0) >= 4) this.unlock("explore_modes");
+    if (RKB_CONFIG.xp.level >= 5) this.unlock("level_5");
+  },
+  count() { return Object.keys(this.unlocked()).length; },
+  total() { return ACHIEVEMENTS.length; },
+  awardXP(amount, key) {
+    if (key && RKB_CONFIG.xp.lastAward[key] && Date.now() - RKB_CONFIG.xp.lastAward[key] < 60_000) return;
+    if (key) RKB_CONFIG.xp.lastAward[key] = Date.now();
+    xpEngine.add(amount);
+  }
+};
+const XP_RANKS = [
+  { min: 1,  rank: "AI Explorer" }, { min: 3,  rank: "AI Navigator" }, { min: 5,  rank: "AI Architect" },
+  { min: 8,  rank: "AI Engineer" }, { min: 12, rank: "AI Sage" },      { min: 20, rank: "AI Legend" }
+];
+function rankFor(level) { let r = XP_RANKS[0].rank; for (const x of XP_RANKS) if (level >= x.min) r = x.rank; return r; }
+function levelThreshold(level) { return Math.round(500 * Math.pow(level, 1.15)); }
+const xpEngine = {
+  add(amount) {
+    if (!amount || amount <= 0) return;
+    RKB_CONFIG.xp.total += amount;
+    while (RKB_CONFIG.xp.total >= RKB_CONFIG.xp.nextLevelXP) {
+      RKB_CONFIG.xp.level += 1;
+      RKB_CONFIG.xp.nextLevelXP = RKB_CONFIG.xp.total + levelThreshold(RKB_CONFIG.xp.level);
+      onLevelUp(RKB_CONFIG.xp.level);
+    }
+    saveConfig(); updateLevelUI(); achievementEngine.check();
+  },
+  current() { return RKB_CONFIG.xp.total; },
+  level() { return RKB_CONFIG.xp.level; },
+  toNext() { return Math.max(0, RKB_CONFIG.xp.nextLevelXP - RKB_CONFIG.xp.total); },
+  fraction() {
+    const total = RKB_CONFIG.xp.nextLevelXP, curr = RKB_CONFIG.xp.total;
+    const prev = total - levelThreshold(RKB_CONFIG.xp.level);
+    const span = Math.max(1, total - prev);
+    return clamp((curr - prev) / span, 0, 1);
+  }
+};
+function onLevelUp(level) {
+  toast(`⬆ LEVEL ${level} — ${rankFor(level)}!`, "ok", 4000);
+  playSound("levelup");
+  actingEngine.play("celebrating", { silentVoice: true, holdMs: 2200 });
+}
+function updateLevelUI() {
+  const lvl = xpEngine.level(), rank = rankFor(lvl), pct = xpEngine.fraction() * 100, total = xpEngine.current();
+  const a = $("lvlMiniLvl"); if (a) a.textContent = lvl;
+  const b = $("lvlMiniRank"); if (b) b.textContent = rank;
+  const c = $("lvlMiniXP"); if (c) c.textContent = total + " XP";
+  const d = $("lvlMiniBar"); if (d) d.style.width = pct + "%";
+  const e1 = $("lifeLvlNum"); if (e1) e1.textContent = lvl;
+  const e2 = $("lifeLvlRank"); if (e2) e2.textContent = rank;
+  const e3 = $("lifeLvlXP"); if (e3) e3.textContent = total + " XP";
+  const e4 = $("lifeLvlBar"); if (e4) e4.style.width = pct + "%";
+  const e5 = $("lifeLvlNext"); if (e5) e5.textContent = xpEngine.toNext() + " XP to Lv." + (lvl + 1);
+  const e6 = $("lifeAchCount"); if (e6) e6.textContent = achievementEngine.count() + " / " + achievementEngine.total();
+}
+
+/* ==================== DEBUG HUD ==================== */
+function applyDebugHud() { const hud = $("debugHud"); if (!hud) return; if (RKB_CONFIG.debugHud) hud.removeAttribute("hidden"); else hud.setAttribute("hidden", ""); }
+function updateDebugHud(extra = {}) {
+  if (!RKB_CONFIG.debugHud) return;
+  const set = (id, v) => { const n = $(id); if (n) n.textContent = v; };
+  set("dbgEmotion", emotionEngine.current);
+  set("dbgIntensity", emotionEngine.intensity.toFixed(2));
+  set("dbgAction", extra.action ?? actingEngine.current);
+  set("dbgGesture", extra.gesture ?? (RKB_CONFIG.__lastGesture || "—"));
+  set("dbgVoice", RKB_CONFIG.voice.style);
+  const st = $("hudState"); set("dbgState", st ? st.textContent : "idle");
+  set("dbgMode", RKB_CONFIG.mode);
+  set("dbgContext", extra.context ?? RKB_CONFIG.context.type);
+  set("dbgVision", extra.vision ?? (screenWatcher.running ? "watching" : "idle"));
+  set("dbgMemory", memoryEngine.count());
+  set("dbgFps", screenWatcher._fps ? screenWatcher._fps.toFixed(1) : "0");
+  set("dbgLatency", RKB_CONFIG.__lastLatency ? RKB_CONFIG.__lastLatency + " ms" : "—");
+  set("dbgDesktop", IS_DESKTOP ? "on" : "off");
+  set("dbgHotkey", RKB_CONFIG.desktop.hotkey + (RKB_CONFIG.desktop.hotkeyEnabled ? "" : " (off)"));
+}
+
+/* ==================== MODAL / TOAST ==================== */
+function modalOpen(title, contentNode, opts = {}) {
+  const root = $("modalRoot"); root.hidden = false; root.innerHTML = "";
+  const m = el("div", "modal");
+  m.appendChild(el("h3", null, title));
+  m.appendChild(contentNode);
+  const actions = el("div", "actions");
+  if (opts.actions) {
+    for (const a of opts.actions) {
+      const b = el("button", "btn " + (a.variant || ""), a.label);
+      b.addEventListener("click", () => { try { a.onClick && a.onClick(); } finally { modalClose(); } });
+      actions.appendChild(b);
+    }
+  } else {
+    const close = el("button", "btn", "Close");
+    close.addEventListener("click", modalClose); actions.appendChild(close);
+  }
+  m.appendChild(actions);
+  root.appendChild(m);
+  root.addEventListener("click", e => { if (e.target === root) modalClose(); });
+}
+function modalClose() { const r = $("modalRoot"); r.hidden = true; r.innerHTML = ""; }
+function toast(msg, kind = "", ms = 2600) {
+  const stack = $("toasts"); if (!stack) return;
+  const t = el("div", "toast " + kind, msg);
+  stack.appendChild(t);
+  setTimeout(() => { t.style.opacity = 0; t.style.transform = "translateY(-6px)"; }, ms - 500);
+  setTimeout(() => t.remove(), ms);
+}
+
+/* ==================== ACTION ENGINE (permission-gated) ==================== */
+const ACTION_ALLOWLIST = ["OPEN_URL","OPEN_APP","OPEN_FOLDER","COPY_TEXT","READ_TEXT","CREATE_NOTE","START_TIMER"];
+function parseActionIntent(text) {
+  if (!text) return null;
+  const t = String(text);
+  const url = t.match(/https?:\/\/[^\s)"']+/i);
+  if (url) return { action: "OPEN_URL", params: { url: url[0] } };
+  const yt = t.match(/\b(open|play|launch)\s+(youtube|chatgpt|google|gmail)\b/i);
+  if (yt) {
+    const map = { youtube: "https://www.youtube.com", chatgpt: "https://chat.openai.com", google: "https://www.google.com", gmail: "https://mail.google.com" };
+    return { action: "OPEN_URL", params: { url: map[yt[2].toLowerCase()] } };
+  }
+  const note = t.match(/\b(note|remember|save)\s*[:\-]\s*(.+)$/i);
+  if (note) return { action: "CREATE_NOTE", params: { text: note[2].trim() } };
+  const timer = t.match(/\b(?:timer|set\s+timer)\s+(\d+)\s*(sec|seconds|min|minutes|m|s)?/i);
+  if (timer) {
+    let ms = parseInt(timer[1], 10) * 1000;
+    if (timer[2] && /min|m/i.test(timer[2]) && !/sec|s/i.test(timer[2])) ms = parseInt(timer[1], 10) * 60000;
+    return { action: "START_TIMER", params: { ms } };
+  }
+  return null;
+}
+async function confirmAndRunAction(intent) {
+  if (!intent || !ACTION_ALLOWLIST.includes(intent.action)) return false;
+  const auto = RKB_CONFIG.desktop.autoExecute[intent.action];
+  if (auto) return executeAction(intent);
+  return new Promise((resolve) => {
+    const body = el("div");
+    body.innerHTML = `<p class="hint">RKB wants to run an action on your device.</p>
+      <div class="code-card"><div class="head"><span>ACTION</span><span>${escapeHtml(intent.action)}</span></div>${escapeHtml(JSON.stringify(intent.params || {}, null, 2))}</div>`;
+    modalOpen("⚡ Action request", body, {
+      actions: [
+        { label: "Deny", onClick: () => resolve(false) },
+        { label: "Allow", variant: "primary", onClick: async () => { const ok = await executeAction(intent); resolve(ok); } }
+      ]
+    });
+  });
+}
+async function executeAction(intent) {
+  try {
+    const res = await fetch("/api/action", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(intent)
+    });
+    const j = await res.json();
+    if (!j.ok) { toast("Action blocked: " + (j.error || "server"), "err"); return false; }
+    achievementEngine.bump("actions");
+    // Desktop-side execution
+    if (IS_DESKTOP && window.rkbDesktop?.requestAction) {
+      const ok = await window.rkbDesktop.requestAction(intent.action, intent.params);
+      if (ok) toast("Action executed", "ok");
+      return !!ok;
+    }
+    // Browser fallback
+    if (intent.action === "OPEN_URL") { window.open(j.url || intent.params.url, "_blank", "noopener"); toast("Opening in new tab", "ok"); }
+    else if (intent.action === "COPY_TEXT") { navigator.clipboard?.writeText(intent.params.text || "").then(() => toast("Copied", "ok")); }
+    else if (intent.action === "START_TIMER") {
+      const ms = j.ms || intent.params.ms;
+      toast(`Timer started for ${(ms/1000).toFixed(0)}s`, "ok");
+      setTimeout(() => { toast("⏰ Timer done!", "ok"); playSound("success"); }, ms);
+    } else if (intent.action === "CREATE_NOTE") {
+      memoryEngine.add("Notes", intent.params.text || ""); toast("Note saved", "ok");
+    } else {
+      toast("Action allowed (browser fallback)", "ok");
+    }
+    return true;
+  } catch (e) { toast("Action error: " + e.message, "err"); return false; }
+}
+
+/* ==================== DESKTOP BRIDGE (fixed placement) ==================== */
+const desktopBridge = {
+  available: IS_DESKTOP,
+  applyDesktopConfig() {
+    if (!this.available) return;
+    const d = RKB_CONFIG.desktop;
+    document.body.dataset.desktop = d.displayMode === "full" ? "1" : d.displayMode === "companion" ? "companion" : "1";
+    this.setAlwaysOnTop(d.alwaysOnTop);
+    this.setClickThrough(d.clickThrough);
+    this.setOpacity(d.opacity);
+    this.setHotkey(d.hotkeyEnabled ? d.hotkey : "");
+    this.snapRestore();
+  },
+  async setAlwaysOnTop(v) { if (this.available) await window.rkbDesktop.setAlwaysOnTop(!!v); },
+  async setClickThrough(v) { if (this.available) await window.rkbDesktop.setClickThrough(!!v); },
+  async setOpacity(v) { if (this.available) await window.rkbDesktop.setOpacity(+v); },
+  async snap(corner) { if (this.available) await window.rkbDesktop.snap(corner); },
+  async snapRestore() { if (this.available) await window.rkbDesktop.snap("restore"); },
+  async hide() { if (this.available) await window.rkbDesktop.hide(); },
+  async show() { if (this.available) await window.rkbDesktop.show(); },
+  async setHotkey(k) { if (this.available) return window.rkbDesktop.setHotkey(k); },
+  async setDisplayMode(mode) { if (this.available) await window.rkbDesktop.setDisplayMode(mode); },
+  async setScale(s) { if (this.available) await window.rkbDesktop.setScale(+s); },
+  async requestAction(action, params) { if (this.available) return window.rkbDesktop.requestAction(action, params); return false; },
+  async openUrl(url) { if (this.available) return this.requestAction("OPEN_URL", { url }); window.open(url, "_blank", "noopener"); },
+  async openApp(name) { if (this.available) return this.requestAction("OPEN_APP", { name }); return false; },
+  async openFolder(p) { if (this.available) return this.requestAction("OPEN_FOLDER", { path: p }); return false; }
+};
+
+/* ==================== UI: SECTIONS ==================== */
+const SECTIONS = {
+  head: { icon: "🎭", group: "CHARACTER STUDIO", label: "Head" },
+  eyes: { icon: "👁", group: "CHARACTER STUDIO", label: "Eyes" },
+  hair: { icon: "💇", group: "CHARACTER STUDIO", label: "Hair" },
+  clothing: { icon: "👕", group: "CHARACTER STUDIO", label: "Clothing" },
+  accessories: { icon: "🎒", group: "CHARACTER STUDIO", label: "Accessories" },
+  body: { icon: "🦾", group: "CHARACTER STUDIO", label: "Body" },
+  gestures: { icon: "🖐", group: "CHARACTER STUDIO", label: "Gestures" },
+  presets: { icon: "🏆", group: "CHARACTER STUDIO", label: "Presets" },
+  context: { icon: "🌐", group: "INTELLIGENCE", label: "Universal Context" },
+  screenwatch: { icon: "👁‍🗨", group: "INTELLIGENCE", label: "Screen Watch" },
+  files: { icon: "📁", group: "INTELLIGENCE", label: "File Intelligence" },
+  vision: { icon: "🖼", group: "INTELLIGENCE", label: "Vision" },
+  memory: { icon: "🧠", group: "INTELLIGENCE", label: "Memory" },
+  timeline: { icon: "🕒", group: "INTELLIGENCE", label: "Context Timeline" },
+  modes: { icon: "🎛", group: "MODES", label: "Mode Center" },
+  language: { icon: "🌐", group: "EXPERIENCE", label: "Language" },
+  voice: { icon: "🎤", group: "EXPERIENCE", label: "Voice" },
+  personality: { icon: "🧠", group: "EXPERIENCE", label: "Personality" },
+  acting: { icon: "🎭", group: "EXPERIENCE", label: "Acting" },
+  emotion: { icon: "⚡", group: "LIFE", label: "Emotion" },
+  achievements: { icon: "🏅", group: "LIFE", label: "Achievements" },
+  xp: { icon: "🚀", group: "LIFE", label: "RKB XP" },
+  theme: { icon: "🎨", group: "DESIGN", label: "Theme" },
+  background: { icon: "🌌", group: "DESIGN", label: "Background" },
+  stage: { icon: "🎪", group: "DESIGN", label: "Character Stage" },
+  desktop: { icon: "🖥", group: "DESKTOP", label: "Companion", badge: IS_DESKTOP ? "" : "WEB" },
+  actions: { icon: "⚡", group: "DESKTOP", label: "Action Center" },
+  privacy: { icon: "🔐", group: "SYSTEM", label: "Privacy" },
+  performance: { icon: "⚡", group: "SYSTEM", label: "Performance" },
+  dna: { icon: "🧬", group: "SYSTEM", label: "RKB DNA" },
+  sound: { icon: "🔊", group: "SYSTEM", label: "Sound" },
+  debug: { icon: "🐞", group: "SYSTEM", label: "Debug Center" },
+  panimalar: { icon: "🎓", group: "SYSTEM", label: "Panimalar" },
+  lab: { icon: "🧪", group: "SYSTEM", label: "RKB Lab" }
+};
+let currentSection = "head";
+
+function buildSidebar() {
+  const wrap = $("navGroups"); wrap.innerHTML = "";
+  const groups = {};
+  for (const key of Object.keys(SECTIONS)) {
+    const s = SECTIONS[key]; (groups[s.group] ||= []).push({ key, ...s });
+  }
+  for (const gname of Object.keys(groups)) {
+    const g = el("div", "nav-group");
+    g.appendChild(el("div", "nav-group-title", gname));
+    for (const it of groups[gname]) {
+      const n = el("div", "nav-item", `<span class="ico">${it.icon}</span><span>${it.label}</span>${it.badge ? `<span class="badge">${it.badge}</span>` : ""}`);
+      n.dataset.nav = it.key;
+      n.addEventListener("click", () => selectSection(it.key));
+      g.appendChild(n);
+    }
+    wrap.appendChild(g);
+  }
+}
+
+/* ==================== SCHEMA ==================== */
+const SCHEMA = {
+  head: () => [
+    { type: "select", key: "character.material", label: "Material", options: Object.keys(MATERIALS) },
+    { type: "select", key: "character.style", label: "Style", options: ["neutral","masculine","feminine","androgynous"] },
+    { type: "select", key: "character.headShape", label: "Head Shape", options: ["round","square","diamond","oval"] },
+    { type: "range", key: "character.headSize", label: "Head Size", min: .7, max: 1.4, step: .02 },
+    { type: "range", key: "character.faceWidth", label: "Face Width", min: .7, max: 1.4, step: .02 },
+    { type: "range", key: "character.faceHeight", label: "Face Height", min: .7, max: 1.4, step: .02 },
+    { type: "select", key: "character.ears", label: "Ear Modules", options: ["disc","fin","none"] },
+    { type: "select", key: "character.antenna", label: "Antenna", options: ["none","stub","v","halo","dish"] },
+    { type: "toggle", key: "character.sideModules", label: "Side Modules" },
+    { type: "range", key: "character.headGlow", label: "Head Glow", min: 0, max: 1, step: .02 },
+    { type: "expr-grid" }
+  ],
+  eyes: () => [
+    { type: "select", key: "eyes.style", label: "Eye Style", options: EYE_STYLES },
+    { type: "range", key: "eyes.size", label: "Size", min: .6, max: 1.6, step: .02 },
+    { type: "range", key: "eyes.spacing", label: "Spacing", min: .6, max: 1.5, step: .02 },
+    { type: "range", key: "eyes.glow", label: "Glow", min: 0, max: 1, step: .02 },
+    { type: "color", key: "eyes.color", label: "Color" },
+    { type: "select", key: "eyes.pupil", label: "Pupil Shape", options: PUPILS },
+    { type: "select", key: "eyes.animation", label: "Animation", options: EYE_ANIMS }
+  ],
+  hair: () => {
+    const rows = [];
+    for (const group of Object.keys(HAIR_GROUPS)) { rows.push({ type: "label", text: group }); rows.push({ type: "hair-grid", group }); }
+    return [...rows,
+      { type: "color", key: "hair.color", label: "Primary Color" },
+      { type: "color", key: "hair.color2", label: "Secondary Color" },
+      { type: "color", key: "hair.highlight", label: "Highlight Color" },
+      { type: "toggle", key: "hair.gradient", label: "Gradient" },
+      { type: "range", key: "hair.glow", label: "Glow", min: 0, max: 1, step: .02 },
+      { type: "range", key: "hair.length", label: "Length", min: .5, max: 1.6, step: .02 },
+      { type: "range", key: "hair.thickness", label: "Thickness", min: .5, max: 1.6, step: .02 },
+      { type: "range", key: "hair.density", label: "Density", min: .5, max: 1.5, step: .02 },
+      { type: "range", key: "hair.flow", label: "Flow", min: 0, max: 1.5, step: .02 },
+      { type: "range", key: "hair.wind", label: "Wind", min: 0, max: 1, step: .02 },
+      { type: "range", key: "hair.metallic", label: "Metallic", min: 0, max: 1, step: .02 },
+      { type: "range", key: "hair.holographic", label: "Holographic", min: 0, max: 1, step: .02 },
+      { type: "select", key: "hair.animation", label: "Animation", options: ["static","flow","wave"] },
+      { type: "hair-state-grid" }
+    ];
+  },
+  clothing: () => [
+    { type: "label", text: "Outfit" }, { type: "outfit-grid" },
+    { type: "color", key: "clothing.primary", label: "Primary" },
+    { type: "color", key: "clothing.secondary", label: "Secondary" },
+    { type: "color", key: "clothing.accent", label: "Accent" },
+    { type: "range", key: "clothing.glow", label: "Glow", min: 0, max: 1, step: .02 },
+    { type: "range", key: "clothing.metal", label: "Metal", min: 0, max: 1, step: .02 },
+    { type: "toggle", key: "clothing.emblem", label: "RKB Emblem" }
+  ],
+  accessories: () => [
+    { type: "label", text: "Toggle multiple simultaneously" },
+    { type: "accessory-grid" },
+    { type: "button", id: "accClear", label: "Clear all", variant: "danger" }
+  ],
+  body: () => [
+    { type: "label", text: "Preset" }, { type: "body-grid" },
+    { type: "range", key: "body.torso", label: "Torso", min: .6, max: 1.5, step: .02 },
+    { type: "range", key: "body.shoulders", label: "Shoulders", min: .6, max: 1.5, step: .02 },
+    { type: "range", key: "body.arms", label: "Arms", min: .6, max: 1.5, step: .02 },
+    { type: "range", key: "body.core", label: "Core", min: .6, max: 1.6, step: .02 }
+  ],
+  gestures: () => [
+    { type: "label", text: "Play a gesture" }, { type: "gesture-grid" },
+    { type: "label", text: "Quick reactions" }, { type: "reaction-grid" }
+  ],
+  presets: () => [ { type: "label", text: "Full character presets" }, { type: "preset-grid" } ],
+
+  context: () => [
+    { type: "context-panel" },
+    { type: "label", text: "Simulate a context (Demo)" },
+    { type: "sim-context-grid" },
+    { type: "button", id: "contextClear", label: "Clear Context", variant: "danger" }
+  ],
+  screenwatch: () => [
+    { type: "label", text: "Screen source" }, { type: "sw-source-grid" },
+    { type: "label", text: "Sampling" }, { type: "sw-sampling-grid" },
+    { type: "label", text: "Analysis" }, { type: "sw-analysis-grid" },
+    { type: "button", id: "swStart", label: "▶ Start Screen Watching", variant: "primary" },
+    { type: "button", id: "swPause", label: "⏸ Pause" },
+    { type: "button", id: "swStop", label: "⏹ Stop Sharing", variant: "danger" }
+  ],
+  files: () => [
+    { type: "file-drop" }, { type: "label", text: "Analyzed files" }, { type: "file-list" },
+    { type: "button", id: "fileClear", label: "Clear Files", variant: "danger" }
+  ],
+  vision: () => [
+    { type: "select", key: "vision.provider", label: "Vision Provider", options: ["demo","openai","ollama"] },
+    { type: "text", key: "vision.model", label: "Vision Model" },
+    { type: "range", key: "screenWatch.cooldown", label: "Analysis Cooldown (ms)", min: 2000, max: 20000, step: 500 },
+    { type: "hint", text: "Vision AI only runs when a real provider is configured on the server. Demo mode returns a truthful placeholder." }
+  ],
+  memory: () => [
+    { type: "toggle", key: "memory.enabled", label: "Memory ON" },
+    { type: "toggle", key: "memory.temporary", label: "Temporary Session" },
+    { type: "label", text: "Known memories" }, { type: "mem-list" },
+    { type: "button", id: "memClearConv", label: "Clear Conversation" },
+    { type: "button", id: "memClearPrefs", label: "Clear Preferences", variant: "danger" }
+  ],
+  timeline: () => [
+    { type: "toggle", key: "timeline.enabled", label: "Record Timeline" },
+    { type: "label", text: "Recent context" }, { type: "tl-list" },
+    { type: "button", id: "tlClear", label: "Clear Timeline", variant: "danger" },
+    { type: "button", id: "tlExport", label: "⬇ Export Timeline" }
+  ],
+  modes: () => [ { type: "label", text: "Current mode" }, { type: "mode-grid" } ],
+
+  language: () => [ { type: "language-grid" }, { type: "label", text: "Special modes" }, { type: "language-mode-grid" } ],
+  voice: () => [
+    { type: "select", key: "voice.style", label: "Voice Style", options: ["professional","friendly","deep","energetic","calm","robotic","anime","assistant","female","male"] },
+    { type: "range", key: "voice.speed", label: "Speed", min: .5, max: 1.8, step: .02 },
+    { type: "range", key: "voice.pitch", label: "Pitch", min: .4, max: 1.6, step: .02 },
+    { type: "range", key: "voice.volume", label: "Volume", min: 0, max: 1, step: .02 },
+    { type: "button", id: "testVoice", label: "🎤 Test Voice", variant: "primary" }
+  ],
+  personality: () => [
+    { type: "personality-grid" },
+    { type: "label", text: "Fine tune" },
+    { type: "range", key: "personality.humor", label: "Humor", min: 0, max: 1, step: .02 },
+    { type: "range", key: "personality.energy", label: "Energy", min: 0, max: 1, step: .02 },
+    { type: "range", key: "personality.formality", label: "Formality", min: 0, max: 1, step: .02 },
+    { type: "range", key: "personality.friendliness", label: "Friendliness", min: 0, max: 1, step: .02 },
+    { type: "range", key: "personality.technicality", label: "Technicality", min: 0, max: 1, step: .02 },
+    { type: "range", key: "personality.length", label: "Response Length", min: 0, max: 1, step: .02 },
+    { type: "range", key: "personality.creativity", label: "Creativity", min: 0, max: 1, step: .02 },
+    { type: "range", key: "personality.emotionIntensity", label: "Emotion Intensity", min: 0, max: 1, step: .02 }
+  ],
+  acting: () => [
+    { type: "toggle", key: "acting.enabled", label: "Acting Engine" },
+    { type: "toggle", key: "acting.autoGesture", label: "Auto Gestures" },
+    { type: "toggle", key: "idle.enabled", label: "Idle Life" },
+    { type: "toggle", key: "idle.reactivePersonality", label: "Reactive Personality" },
+    { type: "label", text: "Trigger a scene" }, { type: "scene-grid" }
+  ],
+  emotion: () => [
+    { type: "life-panel" },
+    { type: "label", text: "Force emotion" }, { type: "emotion-grid" },
+    { type: "toggle", key: "emotion.autoFromChat", label: "Auto Emotion from Chat" },
+    { type: "button", id: "lifeReset", label: "Reset Emotion", variant: "danger" }
+  ],
+  achievements: () => [ { type: "ach-panel" } ],
+  xp: () => [ { type: "xp-panel" }, { type: "button", id: "xpAdd100", label: "+100 XP (test)", variant: "primary" } ],
+  theme: () => [
+    { type: "label", text: "Preset" }, { type: "theme-grid" },
+    { type: "color", key: "theme.accent", label: "Accent" },
+    { type: "color", key: "theme.accent2", label: "Accent 2" },
+    { type: "color", key: "theme.bg0", label: "Background" },
+    { type: "range", key: "theme.glass", label: "Glass Opacity", min: .1, max: 1, step: .02 },
+    { type: "range", key: "theme.radius", label: "Corner Radius", min: 0, max: 30, step: 1 }
+  ],
+  background: () => [
+    { type: "label", text: "Preset" }, { type: "bg-grid" },
+    { type: "range", key: "background.density", label: "Particle Density", min: .2, max: 2, step: .05 },
+    { type: "range", key: "background.speed", label: "Particle Speed", min: .2, max: 2.5, step: .05 },
+    { type: "range", key: "background.glow", label: "Glow Intensity", min: 0, max: 1, step: .02 }
+  ],
+  stage: () => [
+    { type: "range", key: "stage.scale", label: "Character Scale", min: .5, max: 1.4, step: .02 },
+    { type: "range", key: "stage.position", label: "Vertical Position", min: -40, max: 40, step: 2 },
+    { type: "range", key: "stage.rotation", label: "Rotation", min: -15, max: 15, step: 1 },
+    { type: "range", key: "stage.aura", label: "Aura Intensity", min: 0, max: 1, step: .02 },
+    { type: "range", key: "stage.brightness", label: "Stage Brightness", min: .6, max: 1.4, step: .02 },
+    { type: "select", key: "stage.camera", label: "View", options: ["full","upper","head","face"] }
+  ],
+  desktop: () => [
+    { type: "desktop-panel" }
+  ],
+  actions: () => [
+    { type: "label", text: "Action Center" },
+    { type: "action-grid" },
+    { type: "label", text: "Auto-execute allowlist (skip confirmation)" },
+    { type: "toggle", key: "desktop.autoExecute.OPEN_URL", label: "Auto OPEN_URL" },
+    { type: "toggle", key: "desktop.autoExecute.OPEN_APP", label: "Auto OPEN_APP" },
+    { type: "toggle", key: "desktop.autoExecute.OPEN_FOLDER", label: "Auto OPEN_FOLDER" },
+    { type: "toggle", key: "desktop.autoExecute.COPY_TEXT", label: "Auto COPY_TEXT" },
+    { type: "toggle", key: "desktop.autoExecute.CREATE_NOTE", label: "Auto CREATE_NOTE" },
+    { type: "toggle", key: "desktop.autoExecute.START_TIMER", label: "Auto START_TIMER" },
+    { type: "hint", text: "All actions route through the server allowlist. Dangerous actions are blocked by default." }
+  ],
+  privacy: () => [ { type: "privacy-panel" } ],
+  performance: () => [
+    { type: "label", text: "Performance mode" }, { type: "perf-grid" },
+    { type: "toggle", key: "reducedMotion", label: "Reduced Motion" },
+    { type: "toggle", key: "behavior.idleBob", label: "Idle Bob" },
+    { type: "toggle", key: "behavior.autoBlink", label: "Auto Blink" },
+    { type: "toggle", key: "behavior.autoLook", label: "Auto Look" }
+  ],
+  dna: () => [
+    { type: "label", text: "RKB DNA v4 — your complete identity" },
+    { type: "button", id: "dnaExport", label: "⬇ Export DNA", variant: "primary" },
+    { type: "button", id: "dnaCopy", label: "📋 Copy DNA" },
+    { type: "button", id: "dnaImport", label: "⬆ Import DNA" },
+    { type: "button", id: "dnaReset", label: "↺ Reset DNA", variant: "danger" }
+  ],
+  sound: () => [
+    { type: "toggle", key: "sound.enabled", label: "Sound ON" },
+    { type: "range", key: "sound.volume", label: "Master Volume", min: 0, max: 1, step: .02 },
+    { type: "button", id: "soundTest", label: "🔊 Test Startup" }
+  ],
+  debug: () => [ { type: "toggle", key: "debugHud", label: "Show Debug HUD" }, { type: "debug-panel" } ],
+  panimalar: () => [
+    { type: "pan-banner" }, { type: "label", text: "Categories" }, { type: "pan-grid" }
+  ],
+  lab: () => [
+    { type: "label", text: "RKB Lab — BETA / EXPERIMENTAL" },
+    { type: "tag", text: "BETA" },
+    { type: "toggle", key: "lab.visionAI", label: "Vision AI (BETA)" },
+    { type: "toggle", key: "lab.wakeWord", label: "Wake Word (BETA)" },
+    { type: "toggle", key: "lab.advancedMemory", label: "Advanced Memory (BETA)" },
+    { type: "toggle", key: "lab.emotionRecognition", label: "Emotion Recognition (BETA)" },
+    { type: "toggle", key: "lab.toolCalling", label: "AI Tool Calling (BETA)" }
+  ]
+};
+
+function selectSection(key) {
+  currentSection = key;
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.toggle("active", n.dataset.nav === key));
+  const label = (SECTIONS[key]?.label || "Studio");
+  const t = $("inspTitle"); if (t) t.textContent = label;
+  const s = $("stageTitle"); if (s) s.textContent = label;
+  renderInspector(key);
+  if (window.innerWidth <= 900) {
+    $("inspector").classList.add("open");
+    $("sidebar").classList.remove("open");
+    $("scrim").hidden = true;
+  }
+  try { localStorage.setItem("rkb.section", key); } catch {}
+}
+function renderInspector(key) {
+  const body = $("inspBody"); if (!body) return;
+  body.innerHTML = "";
+  const rows = (SCHEMA[key] || (() => [{ type: "hint", text: "Select a section." }]))();
+  for (const row of rows) body.appendChild(buildRow(row));
+}
+function buildRow(row) {
+  const f = el("div", "field");
+  if (row.type === "label") { f.className = "section-label"; f.textContent = row.text; return f; }
+  if (row.type === "hint") { f.className = "hint"; f.textContent = row.text; return f; }
+  if (row.type === "tag") { const w = el("div"); w.appendChild(el("span", "tag", row.text)); return w; }
+  if (row.type === "button") { const b = el("button", "btn " + (row.variant || ""), row.label); b.addEventListener("click", () => handleButton(row.id)); return b; }
+  if (row.type === "toggle") {
+    const wrap = el("div", "row");
+    const cb = el("input"); cb.type = "checkbox"; cb.checked = !!getPath(RKB_CONFIG, row.key);
+    cb.addEventListener("change", () => {
+      setPath(RKB_CONFIG, row.key, cb.checked);
+      if (row.key === "debugHud") applyDebugHud();
+      if (row.key.startsWith("desktop.")) desktopBridge.applyDesktopConfig();
+      commit(row.key);
+    });
+    const l = el("label", null, row.label);
+    wrap.appendChild(cb); wrap.appendChild(l); f.appendChild(wrap); return f;
+  }
+  if (row.type === "range") {
+    f.appendChild(el("label", null, row.label));
+    const wrap = el("div", "row"); const val = el("span", "val"); const input = el("input");
+    input.type = "range"; input.min = row.min; input.max = row.max; input.step = row.step;
+    input.value = getPath(RKB_CONFIG, row.key); val.textContent = (+input.value).toFixed(2);
+    input.addEventListener("input", () => {
+      val.textContent = (+input.value).toFixed(2); setPath(RKB_CONFIG, row.key, +input.value);
+      if (row.key === "desktop.opacity") desktopBridge.setOpacity(+input.value);
+      if (row.key === "desktop.scale") desktopBridge.setScale(+input.value);
+      commit(row.key);
+    });
+    wrap.appendChild(input); wrap.appendChild(val); f.appendChild(wrap); return f;
+  }
+  if (row.type === "color") {
+    f.appendChild(el("label", null, row.label));
+    const input = el("input"); input.type = "color"; input.value = getPath(RKB_CONFIG, row.key);
+    input.addEventListener("input", () => { setPath(RKB_CONFIG, row.key, input.value); commit(row.key); });
+    f.appendChild(input); return f;
+  }
+  if (row.type === "text") {
+    f.appendChild(el("label", null, row.label));
+    const input = el("input"); input.type = "text"; input.value = getPath(RKB_CONFIG, row.key) || "";
+    input.addEventListener("change", () => { setPath(RKB_CONFIG, row.key, input.value); commit(row.key); });
+    f.appendChild(input); return f;
+  }
+  if (row.type === "select") {
+    f.appendChild(el("label", null, row.label));
+    const sel = el("select");
+    for (const o of row.options) { const opt = el("option", null, o); opt.value = o; if (getPath(RKB_CONFIG, row.key) === o) opt.selected = true; sel.appendChild(opt); }
+    sel.addEventListener("change", () => { setPath(RKB_CONFIG, row.key, sel.value); commit(row.key); });
+    f.appendChild(sel); return f;
+  }
+  if (row.type === "expr-grid") {
+    f.appendChild(el("label", null, "Expressions"));
+    const g = el("div", "chip-grid");
+    for (const e of EXPRESSIONS) {
+      const c = el("div", "chip", e);
+      c.addEventListener("click", () => { applyExpression(e); const guess = classifyEmotion(e); emotionEngine.set(guess.emotion, .8); playSound("notify"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "hair-grid") {
+    const g = el("div", "chip-grid");
+    for (const s of HAIR_GROUPS[row.group]) {
+      const c = el("div", "chip" + (RKB_CONFIG.hair.style === s ? " on" : ""), s);
+      c.addEventListener("click", () => { RKB_CONFIG.hair.style = s; commit("hair.style"); renderInspector("hair"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "hair-state-grid") {
+    f.appendChild(el("label", null, "Hair state"));
+    const g = el("div", "chip-grid");
+    for (const s of ["idle","happy","angry","thinking","processing","sleeping"]) {
+      const c = el("div", "chip", s);
+      c.addEventListener("click", () => { setHairState(s); playSound("notify"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "outfit-grid") {
+    const g = el("div", "chip-grid");
+    for (const o of OUTFITS) {
+      const c = el("div", "chip" + (RKB_CONFIG.clothing.outfit === o ? " on" : ""), o);
+      c.addEventListener("click", () => { RKB_CONFIG.clothing.outfit = o; commit("clothing.outfit"); renderInspector("clothing"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "accessory-grid") {
+    const g = el("div", "chip-grid");
+    for (const a of ACCESSORIES) {
+      const on = RKB_CONFIG.accessories.includes(a);
+      const c = el("div", "chip" + (on ? " on" : ""), a);
+      c.addEventListener("click", () => {
+        const i = RKB_CONFIG.accessories.indexOf(a);
+        if (i >= 0) RKB_CONFIG.accessories.splice(i, 1); else RKB_CONFIG.accessories.push(a);
+        commit("accessories"); renderInspector("accessories");
+      });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "body-grid") {
+    const g = el("div", "chip-grid");
+    for (const b of BODY_PRESETS) {
+      const c = el("div", "chip" + (RKB_CONFIG.body.preset === b ? " on" : ""), b);
+      c.addEventListener("click", () => { RKB_CONFIG.body.preset = b; commit("body.preset"); renderInspector("body"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "gesture-grid") {
+    const g = el("div", "chip-grid");
+    for (const gs of GESTURES) {
+      const c = el("div", "chip", gs);
+      c.addEventListener("click", () => { playGesture(gs); playSound("notify"); achievementEngine.bump("gestures"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "reaction-grid") {
+    const g = el("div", "chip-grid");
+    const reactions = [
+      { e: "👍", s: "proud" }, { e: "👋", s: "greeting" }, { e: "❤️", s: "happy" },
+      { e: "👏", s: "celebrating" }, { e: "🫡", s: "proud" }, { e: "🤔", s: "thinking" },
+      { e: "😮", s: "surprised" }, { e: "😂", s: "playful" }, { e: "😴", s: "sleepy" }, { e: "🔥", s: "celebrating" }
+    ];
+    for (const r of reactions) {
+      const c = el("div", "chip emo", r.e); c.title = r.s;
+      c.addEventListener("click", () => { actingEngine.play(r.s, { force: true }); achievementEngine.bump("scenes"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "scene-grid") {
+    const g = el("div", "chip-grid");
+    for (const s of Object.keys(ACTING_SCENES)) {
+      const c = el("div", "chip", s);
+      c.addEventListener("click", () => { actingEngine.play(s, { force: true }); achievementEngine.bump("scenes"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "emotion-grid") {
+    const g = el("div", "chip-grid");
+    for (const k of Object.keys(EMOTIONS)) {
+      const c = el("div", "chip", `${EMOTIONS[k].icon} ${k}`);
+      c.addEventListener("click", () => { emotionEngine.set(k, .8); playSound("notify"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "mode-grid") {
+    const g = el("div", "chip-grid");
+    for (const k of Object.keys(MODES)) {
+      const c = el("div", "chip" + (RKB_CONFIG.mode === k ? " on" : ""), `${MODES[k].icon} ${MODES[k].label}`);
+      c.addEventListener("click", () => { applyMode(k); renderInspector("modes"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "sim-context-grid") {
+    const g = el("div", "chip-grid");
+    const demos = [
+      { label: "YouTube — Movie", type: "movie", source: "YouTube", summary: "[DEMO] Movie context" },
+      { label: "Wikipedia — NN", type: "study", source: "Wikipedia", summary: "[DEMO] Study context" },
+      { label: "VS Code — model.py", type: "code", source: "VS Code", summary: "[DEMO] Code context" },
+      { label: "PDF — Chapter 3", type: "pdf", source: "PDF", summary: "[DEMO] PDF context" },
+      { label: "Chart", type: "chart", source: "Analytics", summary: "[DEMO] Chart context" },
+      { label: "Game", type: "game", source: "Steam", summary: "[DEMO] Game context" }
+    ];
+    for (const d of demos) {
+      const c = el("div", "chip", d.label);
+      c.addEventListener("click", () => {
+        contextEngine.set({ type: d.type, source: d.source, title: d.label, summary: d.summary, confidence: 0.75, permission: "demo" });
+        contextEngine.pushTimeline({ source: d.source, type: d.type, summary: d.summary });
+        toast("Demo context set: " + d.label, "ok");
+      });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "sw-source-grid") {
+    const g = el("div", "chip-grid");
+    for (const s of ["tab","window","screen"]) {
+      const c = el("div", "chip" + (RKB_CONFIG.screenWatch.source === s ? " on" : ""), s);
+      c.addEventListener("click", () => { RKB_CONFIG.screenWatch.source = s; saveConfig(); renderInspector("screenwatch"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "sw-sampling-grid") {
+    const g = el("div", "chip-grid");
+    for (const s of ["eco","balanced","fast"]) {
+      const c = el("div", "chip" + (RKB_CONFIG.screenWatch.sampling === s ? " on" : ""), s);
+      c.addEventListener("click", () => { RKB_CONFIG.screenWatch.sampling = s; saveConfig(); renderInspector("screenwatch"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "sw-analysis-grid") {
+    const g = el("div", "chip-grid");
+    for (const s of ["automatic","ask-first","manual"]) {
+      const c = el("div", "chip" + (RKB_CONFIG.screenWatch.analysis === s ? " on" : ""), s);
+      c.addEventListener("click", () => { RKB_CONFIG.screenWatch.analysis = s; saveConfig(); renderInspector("screenwatch"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "file-drop") {
+    const wrap = el("div", "file-drop");
+    wrap.innerHTML = `<div class="h">Drop file here or <b>click</b></div><div>PDF, TXT, DOCX, CSV, PNG, JPG, JS, HTML, CSS, JSON, PY, JAVA, CPP, MD</div>`;
+    const inp = el("input"); inp.type = "file"; inp.multiple = true; inp.accept = SUPPORTED_EXT.map(e => "." + e).join(","); inp.style.display = "none";
+    wrap.addEventListener("click", () => inp.click());
+    wrap.addEventListener("dragover", e => { e.preventDefault(); wrap.classList.add("hot"); });
+    wrap.addEventListener("dragleave", () => wrap.classList.remove("hot"));
+    wrap.addEventListener("drop", async e => { e.preventDefault(); wrap.classList.remove("hot"); await handleFiles(e.dataTransfer.files); });
+    inp.addEventListener("change", async () => { await handleFiles(inp.files); inp.value = ""; });
+    wrap.appendChild(inp); return wrap;
+  }
+  if (row.type === "file-list") { const wrap = el("div", "file-list"); wrap.id = "fileList"; renderFileList(wrap); return wrap; }
+  if (row.type === "tl-list") { const wrap = el("div", "timeline"); wrap.id = "tlList"; renderTimelineIfOpen(); return wrap; }
+  if (row.type === "mem-list") { const wrap = el("div", "mem-list"); wrap.id = "memList"; renderMemoryIfOpen(); return wrap; }
+  if (row.type === "context-panel") {
+    const wrap = el("div", "life-card");
+    wrap.innerHTML = `<div class="life-kv">
+      <span>Type</span><b id="ctxTypeV">${contextEngine.state.type.toUpperCase()}</b>
+      <span>Source</span><b id="ctxSourceV">${escapeHtml(contextEngine.state.source || "—")}</b>
+      <span>Summary</span><b id="ctxSummaryV" style="text-align:right;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(contextEngine.state.summary || "—")}</b>
+      <span>Confidence</span><b id="ctxConfV">${(contextEngine.state.confidence * 100).toFixed(0)}%</b></div>`;
+    return wrap;
+  }
+  if (row.type === "privacy-panel") {
+    const wrap = el("div");
+    const rows = [
+      { k: "Screen Sharing", v: RKB_CONFIG.privacy.screenSharing },
+      { k: "Camera", v: RKB_CONFIG.privacy.camera },
+      { k: "Memory", v: RKB_CONFIG.privacy.memoryOn },
+      { k: "Context Timeline", v: RKB_CONFIG.privacy.timelineOn },
+      { k: "Data Storage", v: RKB_CONFIG.privacy.dataStorage, raw: true }
+    ];
+    for (const r of rows) {
+      const div = el("div", "privacy-row");
+      div.innerHTML = `<span class="k">${r.k}</span><span class="v ${r.raw ? "" : r.v ? "on" : "off"}">${r.raw ? r.v : r.v ? "ON" : "OFF"}</span>`;
+      wrap.appendChild(div);
+    }
+    const btnRow = el("div", "btn-row");
+    const mk = (lbl, fn, danger) => { const b = el("button", "btn " + (danger ? "danger" : ""), lbl); b.addEventListener("click", fn); btnRow.appendChild(b); };
+    mk("Stop All Sharing", () => { screenWatcher.stop(true); cameraEngine.stop(); RKB_CONFIG.privacy.screenSharing = false; RKB_CONFIG.privacy.camera = false; saveConfig(); renderInspector("privacy"); toast("All sharing stopped", "ok"); });
+    mk("Clear Session", () => { memoryEngine.clear(); contextEngine.clear(); saveConfig(); renderInspector("privacy"); toast("Session cleared", "ok"); });
+    mk("Clear Memory", () => { memoryEngine.clear(); renderInspector("privacy"); toast("Memory cleared", "ok"); });
+    mk("Clear Context", () => { contextEngine.clear(); toast("Context cleared", "ok"); });
+    mk("Reset Privacy", () => { RKB_CONFIG.privacy = structuredClone(DEFAULTS.privacy); saveConfig(); renderInspector("privacy"); }, true);
+    wrap.appendChild(btnRow); return wrap;
+  }
+  if (row.type === "debug-panel") {
+    const wrap = el("div", "life-card");
+    wrap.innerHTML = `<div class="life-kv">
+      <span>Mode</span><b>${RKB_CONFIG.mode}</b>
+      <span>Context Type</span><b>${RKB_CONFIG.context.type}</b>
+      <span>Emotion</span><b>${emotionEngine.current}</b>
+      <span>Vision Provider</span><b>${RKB_CONFIG.vision.provider}</b>
+      <span>Memory Items</span><b>${memoryEngine.count()}</b>
+      <span>Timeline Items</span><b>${RKB_CONFIG.timeline.items.length}</b>
+      <span>Screen Sharing</span><b>${RKB_CONFIG.privacy.screenSharing ? "ON" : "OFF"}</b>
+      <span>Camera</span><b>${RKB_CONFIG.privacy.camera ? "ON" : "OFF"}</b>
+      <span>Desktop</span><b>${IS_DESKTOP ? "Electron" : "Web"}</b></div>`;
+    return wrap;
+  }
+  if (row.type === "pan-banner") {
+    const wrap = el("div", "pan-banner");
+    wrap.innerHTML = `<img src="logo.png" alt="RKB" onerror="this.style.display='none'"><div class="txt"><b>Panimalar Mode</b><small>Specialized RKB mode. Not the identity of RKB.</small></div>`;
+    return wrap;
+  }
+  if (row.type === "pan-grid") {
+    const cats = ["Courses","Departments","Faculty","Admissions","Placements","Facilities","Campus","Events","Research","Hostel","Transport","Contact"];
+    const g = el("div", "chip-grid");
+    for (const c of cats) {
+      const b = el("div", "chip", c);
+      b.addEventListener("click", () => {
+        const info = RKB_CONFIG.panimalar.categories[c];
+        if (!info) { showSpeech(`${c}: knowledge source not configured.`, 3200); toast("Knowledge source not configured.", "err"); return; }
+        showSpeech(info, 3600);
+      });
+      g.appendChild(b);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "life-panel") {
+    const wrap = el("div", "life-card");
+    wrap.innerHTML = `<div class="life-emo">
+        <div class="e-icon" id="lifeEmoIcon">${EMOTIONS[emotionEngine.current].icon}</div>
+        <div class="e-txt"><b id="lifeEmoName">${emotionEngine.current.toUpperCase()}</b><small>current emotion</small></div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-mute);letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px">
+          <span>Intensity</span><span id="lifeEmoInt">${emotionEngine.intensity.toFixed(2)}</span>
+        </div>
+        <div class="life-bar"><i id="lifeEmoBar" style="width:${(emotionEngine.intensity*100).toFixed(0)}%"></i></div>
+      </div>
+      <div class="life-kv">
+        <span>Action</span><b id="lifeAction">idle</b>
+        <span>Achievements</span><b id="lifeAchCount">${achievementEngine.count()} / ${achievementEngine.total()}</b>
+        <span>Level</span><b id="lifeLvlNum">${xpEngine.level()}</b>
+        <span>XP</span><b id="lifeLvlXP">${xpEngine.current()} XP</b>
+      </div>`;
+    clearInterval(buildRow._lifeTick);
+    buildRow._lifeTick = setInterval(() => {
+      const i = $("lifeEmoIcon"); if (!i) { clearInterval(buildRow._lifeTick); return; }
+      i.textContent = EMOTIONS[emotionEngine.current].icon;
+      $("lifeEmoName").textContent = emotionEngine.current.toUpperCase();
+      $("lifeEmoInt").textContent = emotionEngine.intensity.toFixed(2);
+      $("lifeEmoBar").style.width = (emotionEngine.intensity * 100).toFixed(0) + "%";
+      $("lifeAction").textContent = actingEngine.current;
+      $("lifeAchCount").textContent = achievementEngine.count() + " / " + achievementEngine.total();
+      $("lifeLvlNum").textContent = xpEngine.level();
+      $("lifeLvlXP").textContent = xpEngine.current() + " XP";
+    }, 500);
+    return wrap;
+  }
+  if (row.type === "ach-panel") {
+    const wrap = el("div", "ach-grid");
+    for (const a of ACHIEVEMENTS) {
+      const on = achievementEngine.has(a.id);
+      const div = el("div", "ach" + (on ? " on" : ""));
+      div.innerHTML = `<div class="ico">${a.icon}</div><div class="t"><b>${a.title}</b><small>${a.desc}</small></div><div class="st">${on ? "✓ UNLOCKED" : "○ LOCKED"}</div>`;
+      wrap.appendChild(div);
+    }
+    return wrap;
+  }
+  if (row.type === "xp-panel") {
+    const wrap = el("div", "lvl-card");
+    wrap.innerHTML = `<div class="top"><h4>🤖 RKB Level</h4><span style="font-size:10px;letter-spacing:.14em;color:var(--text-mute)">LV.<b id="lifeLvlNum">${xpEngine.level()}</b></span></div>
+      <div class="rank" id="lifeLvlRank">${rankFor(xpEngine.level())}</div>
+      <div class="xp-bar"><i id="lifeLvlBar" style="width:${(xpEngine.fraction()*100).toFixed(0)}%"></i></div>
+      <div class="meta"><span><b id="lifeLvlXP">${xpEngine.current()} XP</b></span><span id="lifeLvlNext">${xpEngine.toNext()} XP to Lv.${xpEngine.level()+1}</span></div>`;
+    clearInterval(buildRow._xpTick);
+    buildRow._xpTick = setInterval(() => {
+      const b = $("lifeLvlBar"); if (!b) { clearInterval(buildRow._xpTick); return; }
+      b.style.width = (xpEngine.fraction() * 100).toFixed(0) + "%";
+      $("lifeLvlXP").textContent = xpEngine.current() + " XP";
+      $("lifeLvlNext").textContent = xpEngine.toNext() + " XP to Lv." + (xpEngine.level() + 1);
+      const n = $("lifeLvlNum"); if (n) n.textContent = xpEngine.level();
+      const r = $("lifeLvlRank"); if (r) r.textContent = rankFor(xpEngine.level());
+    }, 500);
+    return wrap;
+  }
+  if (row.type === "desktop-panel") {
+    const d = RKB_CONFIG.desktop;
+    const wrap = el("div");
+    const st = el("div", "life-card");
+    st.innerHTML = `<div class="life-kv">
+        <span>Environment</span><b>${IS_DESKTOP ? "Electron Desktop" : "Browser (web mode)"}</b>
+        <span>Always On Top</span><b>${d.alwaysOnTop ? "ON" : "OFF"}</b>
+        <span>Click Through</span><b>${d.clickThrough ? "ON" : "OFF"}</b>
+        <span>Opacity</span><b>${(d.opacity * 100).toFixed(0)}%</b>
+        <span>Scale</span><b>${(d.scale * 100).toFixed(0)}%</b>
+        <span>Hotkey</span><b>${d.hotkeyEnabled ? d.hotkey : "OFF"}</b>
+        <span>Display Mode</span><b>${d.displayMode}</b>
+      </div>`;
+    wrap.appendChild(st);
+
+    if (!IS_DESKTOP) {
+      const note = el("div", "hint");
+      note.style.marginTop = "10px";
+      note.innerHTML = "Desktop companion requires the <b>Electron</b> app. Run <code>cd desktop &amp;&amp; npm start</code> to launch RKB with always-on-top, tray, hotkeys and OS actions. The browser cannot control Windows windows.";
+      wrap.appendChild(note);
+      return wrap;
+    }
+
+    wrap.appendChild(el("div", "section-label", "Window controls"));
+    const wr = el("div", "btn-row");
+    const mkBtn = (lbl, fn, variant) => { const b = el("button", "btn " + (variant || ""), lbl); b.addEventListener("click", fn); wr.appendChild(b); };
+    mkBtn(d.alwaysOnTop ? "✓ Always On Top" : "Always On Top", () => { RKB_CONFIG.desktop.alwaysOnTop = !RKB_CONFIG.desktop.alwaysOnTop; saveConfig(); desktopBridge.setAlwaysOnTop(RKB_CONFIG.desktop.alwaysOnTop); renderInspector("desktop"); });
+    mkBtn(d.clickThrough ? "✓ Click Through" : "Click Through", () => { RKB_CONFIG.desktop.clickThrough = !RKB_CONFIG.desktop.clickThrough; saveConfig(); desktopBridge.setClickThrough(RKB_CONFIG.desktop.clickThrough); renderInspector("desktop"); });
+    mkBtn("Show", () => desktopBridge.show());
+    mkBtn("Hide", () => desktopBridge.hide());
+    mkBtn("Minimize", () => window.rkbDesktop?.minimize?.());
+    wrap.appendChild(wr);
+
+    wrap.appendChild(el("div", "section-label", "Snap to corner"));
+    const sr = el("div", "btn-row");
+    for (const c of ["tl","tr","bl","br"]) {
+      const b = el("button", "btn small", c.toUpperCase());
+      b.addEventListener("click", () => desktopBridge.snap(c));
+      sr.appendChild(b);
+    }
+    wrap.appendChild(sr);
+
+    wrap.appendChild(el("div", "section-label", "Display mode"));
+    const mr = el("div", "btn-row");
+    for (const m of ["full","companion","hud","character-only"]) {
+      const b = el("button", "btn small" + (RKB_CONFIG.desktop.displayMode === m ? " primary" : ""), m);
+      b.addEventListener("click", () => { RKB_CONFIG.desktop.displayMode = m; saveConfig(); desktopBridge.setDisplayMode(m); renderInspector("desktop"); });
+      mr.appendChild(b);
+    }
+    wrap.appendChild(mr);
+
+    wrap.appendChild(el("div", "section-label", "Opacity"));
+    const op = el("input"); op.type = "range"; op.min = 0.2; op.max = 1; op.step = 0.05; op.value = d.opacity;
+    op.addEventListener("input", () => { RKB_CONFIG.desktop.opacity = +op.value; saveConfig(); desktopBridge.setOpacity(+op.value); });
+    wrap.appendChild(op);
+
+    wrap.appendChild(el("div", "section-label", "Scale"));
+    const sc = el("input"); sc.type = "range"; sc.min = 0.5; sc.max = 1.5; sc.step = 0.05; sc.value = d.scale;
+    sc.addEventListener("input", () => { RKB_CONFIG.desktop.scale = +sc.value; saveConfig(); desktopBridge.setScale(+sc.value); });
+    wrap.appendChild(sc);
+
+    wrap.appendChild(el("div", "section-label", "Global hotkey"));
+    const hr = el("div", "btn-row");
+    for (const k of ["Ctrl+Space","Ctrl+Shift+R","Alt+Space"]) {
+      const b = el("button", "btn small" + (RKB_CONFIG.desktop.hotkey === k ? " primary" : ""), k);
+      b.addEventListener("click", () => { RKB_CONFIG.desktop.hotkey = k; saveConfig(); desktopBridge.setHotkey(RKB_CONFIG.desktop.hotkeyEnabled ? k : ""); renderInspector("desktop"); });
+      hr.appendChild(b);
+    }
+    wrap.appendChild(hr);
+    const hk = el("div", "row");
+    const hkCb = el("input"); hkCb.type = "checkbox"; hkCb.checked = !!RKB_CONFIG.desktop.hotkeyEnabled;
+    hkCb.addEventListener("change", () => { RKB_CONFIG.desktop.hotkeyEnabled = hkCb.checked; saveConfig(); desktopBridge.setHotkey(hkCb.checked ? RKB_CONFIG.desktop.hotkey : ""); });
+    const hkL = el("label", null, "Enable global hotkey");
+    hk.appendChild(hkCb); hk.appendChild(hkL);
+    wrap.appendChild(hk);
+    return wrap;
+  }
+  if (row.type === "action-grid") {
+    const g = el("div", "chip-grid");
+    const actions = [
+      { label: "Open YouTube", act: "OPEN_URL", params: { url: "https://www.youtube.com" } },
+      { label: "Open ChatGPT", act: "OPEN_URL", params: { url: "https://chat.openai.com" } },
+      { label: "Open Google", act: "OPEN_URL", params: { url: "https://www.google.com" } },
+      { label: "Open Downloads", act: "OPEN_FOLDER", params: { path: "~/Downloads" } },
+      { label: "Timer 30s", act: "START_TIMER", params: { ms: 30000 } },
+      { label: "Timer 5 min", act: "START_TIMER", params: { ms: 300000 } },
+      { label: "Copy greeting", act: "COPY_TEXT", params: { text: "RKB — Your AI. Everywhere. Anytime." } },
+      { label: "Create note", act: "CREATE_NOTE", params: { text: "New RKB note" } }
+    ];
+    for (const a of actions) {
+      const c = el("div", "chip", a.label);
+      c.addEventListener("click", async () => {
+        const ok = await confirmAndRunAction({ action: a.act, params: a.params });
+        if (ok) toast("Action completed", "ok");
+      });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "language-grid") {
+    const g = el("div", "chip-grid");
+    for (const L of LANGUAGES) {
+      const c = el("div", "chip" + (RKB_CONFIG.language.code === L.code ? " on" : ""), L.label);
+      c.addEventListener("click", () => { RKB_CONFIG.language.code = L.code; RKB_CONFIG.language.mode = L.code; commit("language"); renderInspector("language"); speakGreeting(); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "language-mode-grid") {
+    const g = el("div", "chip-grid");
+    for (const m of ["english","tamil","tanglish","tamil+english","hindi","hindi+english","telugu","malayalam","kannada"]) {
+      const c = el("div", "chip" + (RKB_CONFIG.language.mode === m ? " on" : ""), m);
+      c.addEventListener("click", () => { RKB_CONFIG.language.mode = m; commit("language.mode"); renderInspector("language"); memoryEngine.add("Language", "Mode: " + m); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "personality-grid") {
+    const g = el("div", "chip-grid");
+    for (const p of Object.keys(PERSONALITIES)) {
+      const c = el("div", "chip" + (RKB_CONFIG.personality.preset === p ? " on" : ""), p);
+      c.addEventListener("click", () => { applyPersonality(p); renderInspector("personality"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "theme-grid") {
+    const g = el("div", "chip-grid");
+    for (const t of Object.keys(THEMES)) {
+      const c = el("div", "chip" + (RKB_CONFIG.theme.preset === t ? " on" : ""), t);
+      c.addEventListener("click", () => { applyThemePreset(t); renderInspector("theme"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "bg-grid") {
+    const g = el("div", "chip-grid");
+    for (const b of ["cyber-grid","space","digital-rain","neural","city","aurora","starfield","holographic","minimal","transparent"]) {
+      const c = el("div", "chip" + (RKB_CONFIG.background.preset === b ? " on" : ""), b);
+      c.addEventListener("click", () => { RKB_CONFIG.background.preset = b; commit("background.preset"); renderInspector("background"); if (bg) bg.reseed(); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "preset-grid") {
+    const g = el("div", "chip-grid");
+    for (const p of Object.keys(PRESETS)) {
+      const c = el("div", "chip", p.toUpperCase());
+      c.addEventListener("click", () => { applyPreset(p); renderInspector("presets"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  if (row.type === "perf-grid") {
+    const g = el("div", "chip-grid");
+    for (const p of ["low","medium","high"]) {
+      const c = el("div", "chip" + (RKB_CONFIG.performance === p ? " on" : ""), p);
+      c.addEventListener("click", () => { RKB_CONFIG.performance = p; saveConfig(); applyTheme(); if (bg) bg.reseed(); renderInspector("performance"); });
+      g.appendChild(c);
+    }
+    f.appendChild(g); return f;
+  }
+  return f;
+}
+function handleButton(id) {
+  switch (id) {
+    case "accClear": RKB_CONFIG.accessories = []; commit("accessories"); renderInspector("accessories"); break;
+    case "testVoice": speakGreeting(); break;
+    case "dnaExport": exportDNA(); break;
+    case "dnaCopy": copyDNA(); break;
+    case "dnaImport": importDNA(); break;
+    case "dnaReset":
+      if (confirm("Reset your RKB DNA to defaults?")) {
+        RKB_CONFIG = structuredClone(DEFAULTS); saveConfig(); renderCharacter(); renderInspector("dna"); updateLevelUI(); toast("DNA reset", "ok");
+      } break;
+    case "soundTest": playSound("startup"); break;
+    case "lifeReset": emotionEngine.set("calm", 0); applyExpression("normal"); setHairState("idle"); updateDebugHud({ action: "idle" }); break;
+    case "xpAdd100": xpEngine.add(100); break;
+    case "contextClear": contextEngine.clear(); renderInspector("context"); toast("Context cleared", "ok"); break;
+    case "swStart": screenWatcher.start(RKB_CONFIG.screenWatch.source); break;
+    case "swPause": screenWatcher.pause(); break;
+    case "swStop": screenWatcher.stop(); break;
+    case "fileClear": __files.length = 0; renderFileList($("fileList")); break;
+    case "memClearConv": memoryEngine.clear("Conversation"); toast("Conversation memory cleared", "ok"); break;
+    case "memClearPrefs": memoryEngine.clear("Preferences"); memoryEngine.clear("Language"); toast("Preference memory cleared", "ok"); break;
+    case "tlClear": RKB_CONFIG.timeline.items = []; saveConfig(); renderTimelineIfOpen(); toast("Timeline cleared", "ok"); break;
+    case "tlExport": {
+      const blob = new Blob([JSON.stringify(RKB_CONFIG.timeline.items, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = "rkb-timeline.json";
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      toast("Timeline exported", "ok"); break;
+    }
+  }
+}
+function commit(path) {
+  saveConfig(); applyTheme(); renderCharacter();
+  if (path && !path.startsWith("debugHud")) achievementEngine.bump("custom");
+  updateDebugHud();
+}
+
+/* ==================== FILE HANDLING ==================== */
+const __files = [];
+async function handleFiles(fileList) {
+  if (!fileList) return;
+  for (const f of Array.from(fileList)) {
+    const entry = await analyzeFile(f);
+    __files.unshift(entry);
+    if (__files.length > 30) __files.length = 30;
+    contextEngine.pushTimeline({ source: f.name, type: entry.type, summary: `${fmtBytes(f.size)} · ${entry.status}` });
+    if (entry.status !== "unsupported" && entry.status !== "error") {
+      contextEngine.set({
+        type: entry.type === "pdf" ? "pdf" : (["js","ts","py","java","cpp","html","css","json","md","jsx","tsx"].includes(entry.type) ? "code" : entry.type === "csv" ? "document" : "image"),
+        source: f.name, title: f.name, summary: entry.status, confidence: 0.7, permission: "user"
+      });
+      memoryEngine.add("Projects", `File: ${f.name}`);
+      xpEngine.add(20);
+      achievementEngine.bump("files");
+    }
+  }
+  if ($("fileList")) renderFileList($("fileList"));
+  toast("Files analyzed", "ok");
+}
+function renderFileList(wrap) {
+  if (!wrap) return;
+  if (!__files.length) { wrap.innerHTML = `<div class="tl-empty">No files yet. Drop a file above.</div>`; return; }
+  wrap.innerHTML = __files.map(f =>
+    `<div class="file-item"><div><div class="nm">${escapeHtml(f.name)}</div><div class="meta">${escapeHtml(f.type.toUpperCase())} · ${fmtBytes(f.size)} · ${escapeHtml(f.status)}${f.metadata && f.metadata.rows ? ` · ${f.metadata.rows} rows` : ""}</div></div><div>${f.text ? `<button class="btn small" data-act="sum" data-id="${f.id}">Summarize</button>` : ""}</div></div>`
+  ).join("");
+  wrap.querySelectorAll("[data-act]").forEach(b => b.addEventListener("click", () => {
+    const file = __files.find(x => x.id === b.dataset.id); if (!file) return;
+    if (file.text) {
+      const lines = file.text.split(/\r?\n/).slice(0, 40).join("\n");
+      modalOpen(`📄 ${file.name}`, (() => { const d = el("div"); d.innerHTML = `<pre>${escapeHtml(lines)}</pre>`; return d; })());
+    }
+  }));
+}
+
+/* ==================== MODE BAR ==================== */
+function buildModeBar() {
+  const wrap = $("modeBar"); if (!wrap) return;
+  wrap.innerHTML = "";
+  for (const k of Object.keys(MODES)) {
+    const b = el("button", "mode-btn" + (RKB_CONFIG.mode === k ? " on" : ""));
+    b.dataset.mode = k;
+    b.innerHTML = `${MODES[k].icon} ${MODES[k].label}`;
+    b.addEventListener("click", () => applyMode(k));
+    wrap.appendChild(b);
+  }
+}
+
+/* ==================== TOPBAR / STAGE TOOLS ==================== */
+function setupTopbar() {
+  $("btnSound").addEventListener("click", () => {
+    RKB_CONFIG.sound.enabled = !RKB_CONFIG.sound.enabled; saveConfig();
+    toast("Sound " + (RKB_CONFIG.sound.enabled ? "ON" : "OFF"), "ok");
+    if (RKB_CONFIG.sound.enabled) playSound("notify");
+  });
+  $("btnPerformance").addEventListener("click", () => {
+    const order = ["low", "medium", "high"];
+    const i = order.indexOf(RKB_CONFIG.performance);
+    RKB_CONFIG.performance = order[(i + 1) % order.length]; saveConfig();
+    applyTheme(); if (bg) bg.reseed();
+    toast("Performance: " + RKB_CONFIG.performance, "ok");
+  });
+  $("btnPrivacy").addEventListener("click", () => selectSection("privacy"));
+  const bd = $("btnDesktopToggle");
+  if (bd) bd.addEventListener("click", () => selectSection("desktop"));
+  $("btnReset").addEventListener("click", () => {
+    const content = el("div");
+    content.innerHTML = `<p class="hint">Choose what to reset. "Everything" requires confirmation.</p>`;
+    const row = el("div", "btn-row");
+    const mk = (label, fn, danger) => {
+      const b = el("button", "btn " + (danger ? "danger" : ""), label);
+      b.addEventListener("click", () => { fn(); modalClose(); });
+      row.appendChild(b);
+    };
+    mk("Character", () => { RKB_CONFIG.character = structuredClone(DEFAULTS.character); RKB_CONFIG.eyes = structuredClone(DEFAULTS.eyes); RKB_CONFIG.hair = structuredClone(DEFAULTS.hair); RKB_CONFIG.body = structuredClone(DEFAULTS.body); RKB_CONFIG.clothing = structuredClone(DEFAULTS.clothing); RKB_CONFIG.accessories = []; commit("character"); });
+    mk("Voice", () => { RKB_CONFIG.voice = structuredClone(DEFAULTS.voice); commit("voice"); });
+    mk("Personality", () => { RKB_CONFIG.personality = structuredClone(DEFAULTS.personality); commit("personality"); });
+    mk("UI / Theme", () => { RKB_CONFIG.theme = structuredClone(DEFAULTS.theme); RKB_CONFIG.background = structuredClone(DEFAULTS.background); RKB_CONFIG.stage = structuredClone(DEFAULTS.stage); commit("theme.preset"); });
+    mk("Context / Memory", () => { contextEngine.clear(); memoryEngine.clear(); RKB_CONFIG.timeline.items = []; saveConfig(); renderInspector(currentSection); });
+    mk("Everything", () => {
+      if (confirm("Reset EVERYTHING to defaults? This cannot be undone.")) {
+        RKB_CONFIG = structuredClone(DEFAULTS); saveConfig();
+        emotionEngine.set("calm", 0); applyTheme(); renderCharacter(); updateLevelUI();
+        if (IS_DESKTOP) desktopBridge.applyDesktopConfig();
+        toast("RKB reset", "ok");
+      }
+    }, true);
+    content.appendChild(row);
+    modalOpen("↺ Reset", content);
+  });
+  $("btnDrawer").addEventListener("click", () => { $("sidebar").classList.toggle("open"); $("scrim").hidden = !$("sidebar").classList.contains("open"); });
+  $("btnInspector").addEventListener("click", () => $("inspector").classList.toggle("open"));
+  $("btnCloseInspector").addEventListener("click", () => $("inspector").classList.remove("open"));
+  $("scrim").addEventListener("click", () => { $("sidebar").classList.remove("open"); $("scrim").hidden = true; });
+  document.querySelectorAll(".qbtn").forEach(b => b.addEventListener("click", () => selectSection(b.dataset.nav)));
+  addEventListener("keydown", e => {
+    if (e.key === "Escape") { modalClose(); $("inspector").classList.remove("open"); $("sidebar").classList.remove("open"); $("scrim").hidden = true; }
+  });
+}
+
+function setupStageTools() {
+  $("btnTestExpr").addEventListener("click", () => {
+    const seq = ["happy","thinking","surprised","confused","focused","proud","sleepy","normal"];
+    let i = 0;
+    const iv = setInterval(() => { applyExpression(seq[i++]); playSound("notify"); if (i >= seq.length) clearInterval(iv); }, 900);
+  });
+  $("btnGestureMenu").addEventListener("click", () => {
+    const menu = el("div", "chip-grid");
+    for (const g of GESTURES) {
+      const c = el("div", "chip", g);
+      c.addEventListener("click", () => { playGesture(g); modalClose(); achievementEngine.bump("gestures"); });
+      menu.appendChild(c);
+    }
+    modalOpen("🖐 Play a gesture", menu);
+  });
+  $("btnScenes").addEventListener("click", () => {
+    const menu = el("div", "chip-grid");
+    for (const s of Object.keys(ACTING_SCENES)) {
+      const c = el("div", "chip", s);
+      c.addEventListener("click", () => { actingEngine.play(s, { force: true }); modalClose(); achievementEngine.bump("scenes"); });
+      menu.appendChild(c);
+    }
+    modalOpen("🎬 Play an acting scene", menu);
+  });
+  $("btnVoiceTest").addEventListener("click", speakGreeting);
+  $("btnBootAgain").addEventListener("click", runBoot);
+  $("btnChatToggle").addEventListener("click", () => $("chatRow").classList.toggle("on"));
+  $("chatSend").addEventListener("click", () => ask($("chatInput").value));
+  $("chatInput").addEventListener("keydown", e => { if (e.key === "Enter") ask($("chatInput").value); });
+  $("chatVoice").addEventListener("click", startVoice);
+  $("ctxPauseBtn").addEventListener("click", () => { if (screenWatcher.running) screenWatcher.pause(); else screenWatcher.resume(); });
+  $("ctxStopBtn").addEventListener("click", () => { screenWatcher.stop(); cameraEngine.stop(); contextEngine.clear(); });
+}
+
+/* ==================== CHAT ==================== */
+let chatBusy = false;
+let voiceBusy = false;
+const chatHistory = [];
+
+async function ask(q) {
+  q = String(q || "").trim(); if (!q || chatBusy) return;
+  chatBusy = true;
+  const input = $("chatInput"); if (input) input.value = "";
+  achievementEngine.bump("chats"); xpEngine.add(5);
+  memoryEngine.detectAndRemember(q);
+  memoryEngine.add("Conversation", q.slice(0, 200));
+
+  const reaction = reactToUser(q);
+  if (reaction) {
+    if (reaction.scene) actingEngine.play(reaction.scene, { force: true });
+    if (reaction.reply) { showSpeech(reaction.reply, 2600); speak(reaction.reply); }
+    chatHistory.push({ role: "user", content: q });
+    chatHistory.push({ role: "assistant", content: reaction.reply || "" });
+    chatBusy = false;
+    return;
+  }
+
+  const userEmotion = classifyEmotion(q);
+  emotionEngine.set(userEmotion.emotion, userEmotion.intensity);
+  actingEngine.play("thinking");
+
+  chatHistory.push({ role: "user", content: q });
+  const t0 = performance.now();
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        provider: "demo", mode: RKB_CONFIG.mode,
+        messages: [
+          { role: "system", content: buildSystemPrompt() },
+          ...chatHistory.slice(-10)
+        ],
+        temperature: .6
+      })
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    RKB_CONFIG.__lastLatency = Math.round(performance.now() - t0);
+    const reply = data.content || data.choices?.[0]?.message?.content || "…";
+
+    let emo = { emotion: "calm", intensity: .5 };
+    if (data.emotion && EMOTIONS[data.emotion]) emo = { emotion: data.emotion, intensity: data.intensity ?? .7 };
+    else if (RKB_CONFIG.emotion.autoFromChat) emo = classifyEmotion(reply, "calm");
+    emotionEngine.set(emo.emotion, emo.intensity);
+
+    const sceneMap = {
+      excited: "celebrating", happy: "success", proud: "proud", sad: "sad",
+      angry: "error", confused: "curious", surprised: "success",
+      playful: "playful", sleepy: "sleepy", curious: "curious", focused: "thinking", calm: "speaking"
+    };
+    actingEngine.play(sceneMap[emo.emotion] || "speaking", { silentVoice: true, holdMs: 3000 });
+    showSpeech(reply.slice(0, 220), 3200);
+    speak(reply, { style: emo.emotion === "excited" ? "energetic" : emo.emotion === "sad" ? "calm" : null });
+    chatHistory.push({ role: "assistant", content: reply });
+    memoryEngine.add("Conversation", "AI: " + reply.slice(0, 200));
+
+    // Action detection
+    const intent = parseActionIntent(reply);
+    if (intent) setTimeout(() => confirmAndRunAction(intent), 400);
+  } catch (e) {
+    console.warn("[RKB] chat error", e);
+    actingEngine.play("error", { force: true });
+    toast("AI request failed — trying Demo Brain", "err");
+  } finally { chatBusy = false; updateDebugHud(); }
+}
+function buildSystemPrompt() {
+  const p = RKB_CONFIG.personality;
+  const ctx = contextEngine.state;
+  const mode = MODES[RKB_CONFIG.mode]?.label || "Universal";
+  const nickname = RKB_CONFIG.memory.prefs.nickname ? `The user likes to be called "${RKB_CONFIG.memory.prefs.nickname}".` : "";
+  const prefs = RKB_CONFIG.memory.items.filter(i => i.cat === "Preferences").slice(0, 5).map(i => i.text).join("; ");
+  return `You are RKB — Real-Time Knowledge Buddy AI. Tagline: "Your AI. Everywhere. Anytime."
+Mode: ${mode}. Personality preset: ${p.preset}.
+Tone: ${p.tone.toFixed(2)}. Humor: ${p.humor.toFixed(2)}. Energy: ${p.energy.toFixed(2)}. Formality: ${p.formality.toFixed(2)}. Friendliness: ${p.friendliness.toFixed(2)}. Technicality: ${p.technicality.toFixed(2)}. Response length preference: ${p.length.toFixed(2)} (0 = short, 1 = long). Creativity: ${p.creativity.toFixed(2)}.
+Language: ${RKB_CONFIG.language.code}, mode: ${RKB_CONFIG.language.mode}. If "tanglish", mix Tamil & English naturally. If "tamil", reply in Tamil.
+Current context: type=${ctx.type}, source=${ctx.source || "none"}.
+${nickname} ${prefs ? "User preferences: " + prefs : ""}
+Never invent facts. If unsure, say so. Do not claim OS-level access.`;
+}
+
+/* ==================== VOICE INPUT ==================== */
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast("Speech recognition isn't supported. Try Chrome/Edge.", "err"); return; }
+  if (voiceBusy) return;
+  voiceBusy = true;
+  const r = new SR();
+  r.lang = RKB_CONFIG.language.code === "en" ? (navigator.language || "en-IN") : RKB_CONFIG.language.code;
+  r.interimResults = false; r.maxAlternatives = 1;
+  actingEngine.play("listening", { force: true, silentVoice: true });
+  r.onresult = e => {
+    const q = e.results[0][0].transcript;
+    if ($("chatInput")) $("chatInput").value = q;
+    achievementEngine.bump("voices"); xpEngine.add(15);
+    ask(q);
+  };
+  r.onerror = () => actingEngine.play("error", { force: true, silentVoice: true });
+  r.onend = () => { voiceBusy = false; };
+  try { r.start(); } catch { voiceBusy = false; toast("Could not start microphone", "err"); }
+}
+
+/* ==================== BOOT ==================== */
+const wait = ms => new Promise(r => setTimeout(r, ms));
+async function runBoot() {
+  const boot = $("boot"); const log = $("bootLog"); const bar = $("bootBar");
+  if (!boot) return;
+  boot.classList.remove("hide"); boot.style.display = "flex";
+  log.innerHTML = ""; bar.style.width = "0%";
+  const steps = [
+    "RKB CORE INITIALIZING","Loading Character","Loading Personality",
+    "Loading Language Engine","Loading Voice","Loading Emotion Engine",
+    "Loading Acting Engine","Loading Context Engine","Loading Memory",
+    "Loading Vision","Loading Achievements","Loading XP","Synchronizing"
+  ];
+  for (let i = 0; i < steps.length; i++) {
+    const line = el("div", "ln", steps[i]);
+    log.appendChild(line);
+    await wait(140);
+    line.classList.add("ok");
+    bar.style.width = ((i + 1) / (steps.length + 1)) * 100 + "%";
+  }
+  const done = el("div", "ln", "RKB ONLINE");
+  log.appendChild(done);
+  await wait(200); done.classList.add("ok"); bar.style.width = "100%";
+  playSound("startup");
+  applyExpression("happy"); setHairState("happy"); emotionEngine.set("happy", .7);
+  await wait(400);
+  playGesture("wave");
+  await wait(300);
+  speakGreeting();
+  achievementEngine.check(); updateLevelUI();
+  await wait(600);
+  hideBoot();
+  setTimeout(hideBoot, 6000);
+}
+function hideBoot() { const boot = $("boot"); if (!boot) return; boot.classList.add("hide"); boot.style.display = "none"; }
+
+/* ==================== PUBLIC API ==================== */
+window.RKB = {
+  get config() { return RKB_CONFIG; },
+  setConfig(patch, opts = {}) {
+    RKB_CONFIG = deepMerge(RKB_CONFIG, patch);
+    if (opts.save !== false) saveConfig();
+    if (opts.render !== false) { applyTheme(); renderCharacter(); }
+    if (patch.emotion) emotionEngine.loadFrom(patch.emotion);
+    updateLevelUI();
+  },
+  render: renderCharacter,
+  setExpression: applyExpression,
+  setEmotion(name, intensity = .6) { emotionEngine.set(name, intensity); },
+  getEmotion() { return emotionEngine.snapshot(); },
+  playGesture, playScene: (n) => actingEngine.play(n, { force: true }),
+  setHairState, speak, playSound,
+  exportDNA, importDNA, copyDNA,
+  applyPreset, applyThemePreset, applyPersonality, applyMode,
+  context: contextEngine,
+  memory: memoryEngine,
+  screenWatcher,
+  cameraEngine,
+  achievements: achievementEngine,
+  xp: xpEngine,
+  desktop: desktopBridge,
+  actions: { confirmAndRunAction, executeAction, parseActionIntent },
+  isDesktop: IS_DESKTOP,
+  version: "4.0.0-phase4"
+};
+
+/* ==================== INIT ==================== */
+function init() {
+  bg = initBackground();
+  buildSidebar();
+  buildModeBar();
+  setupTopbar();
+  setupStageTools();
+  emotionEngine.loadFrom(RKB_CONFIG.emotion);
+  emotionEngine.set(RKB_CONFIG.emotion.current || "calm", RKB_CONFIG.emotion.intensity || 0);
+  applyDebugHud();
+  const savedSection = localStorage.getItem("rkb.section") || "head";
+  selectSection(savedSection);
+  if ("speechSynthesis" in window) { try { speechSynthesis.onvoiceschanged = () => {}; speechSynthesis.getVoices(); } catch {} }
+  applyTheme();
+  renderCharacter();
+  updateLevelUI();
+  idleEngine.start();
+  applyMode(RKB_CONFIG.mode || "universal");
+  contextEngine._updatePanel();
+
+  document.addEventListener("click", e => {
+    const n = e.target.closest(".nav-item");
+    if (n) try { localStorage.setItem("rkb.section", n.dataset.nav); } catch {}
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) idleEngine.stop(); else idleEngine.start();
+  });
+  setInterval(() => contextEngine._updatePanel(), 1000);
+
+  document.addEventListener("dragover", e => { if (e.dataTransfer && e.dataTransfer.types.includes("Files")) e.preventDefault(); });
+  document.addEventListener("drop", async e => {
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+      e.preventDefault();
+      await handleFiles(e.dataTransfer.files);
+    }
+  });
+
+  // Desktop integration
+  if (IS_DESKTOP) {
+    achievementEngine.bump("desktop");
+    desktopBridge.applyDesktopConfig();
+    if (window.rkbDesktop.onHotkey) window.rkbDesktop.onHotkey((k) => {
+      if (k === "hotkey-pressed") { RKB_CONFIG.acting.enabled && actingEngine.play("greeting", { force: true }); }
+      if (k === "wake-word") { showSpeech("Yeah bro?", 1800); playSound("notify"); startVoice(); }
+    });
+  }
+
+  runBoot();
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+else init();
+
+})();
+</script>
+</body>
+</html>

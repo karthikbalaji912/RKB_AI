@@ -1,0 +1,37 @@
+{
+  "name": "rkb-desktop",
+  "productName": "RKB",
+  "version": "4.0.0",
+  "description": "RKB — Real-Time Knowledge Buddy AI. Desktop companion.",
+  "main": "main.js",
+  "author": "RKB",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder --win --x64",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder -mwl"
+  },
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "ai.rkb.companion",
+    "productName": "RKB",
+    "files": ["main.js", "preload.js", "../index.html", "../server.js", "../logo.png"],
+    "extraResources": [
+      { "from": "../index.html", "to": "app/index.html" },
+      { "from": "../server.js", "to": "app/server.js" },
+      { "from": "../logo.png", "to": "app/logo.png" }
+    ],
+    "win": {
+      "icon": "../logo.png",
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
+    },
+    "mac": { "icon": "../logo.png", "target": ["dmg"] },
+    "linux": { "icon": "../logo.png", "target": ["AppImage"] }
+  }
+}
